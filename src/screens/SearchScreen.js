@@ -16,6 +16,8 @@ const SearchScreen = ({ navigation, route }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [searchText, setSearchText] = useState("");
   useEffect(() => {
+    console.log('Params:')
+    console.log(route.params)
     handleInputChange(searchText);
   }, [searchText]);
   // Таны одоо байгаа газрын байршил
@@ -39,37 +41,53 @@ const SearchScreen = ({ navigation, route }) => {
     }
     setSearchText(value);
   }
-  function navigate(dest, route){
-    axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(dest)}&key=AIzaSyCfoOZmSBlNKkgaXAu_kuH2R3O7r17PCyc`)
-  .then(response => {
-    const data = response.data;
-    if (data.status === 'OK') {
-      const { lat, lng } = data.results[0].geometry.location;
-    let newLocations;
-    if (route.params.locations.length === 2) {
-        newLocations = [
-          route.params.locations[0],
-          { latitude: lat, longitude: lng, identifier:lng.toString()}
-        ];
-      } else {
-        newLocations = [
-          ...route.params.locations,
-          { latitude: lat, longitude: lng , identifier:lng.toString()}
-        ];
-      }
-    navigation.navigate('Home', { locations: newLocations, destination: dest});
-    } else {
-      console.error(`Geocoding failed: ${data.status}`);
-    }
-  })
-  .catch(error => console.error(`Geocoding error: ${error}`));
-    }
-    const [newLocations, setNewLocations] = useState(route.params.locations); 
+  function navigate(dest, route) {
+    axios
+      .get(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          dest
+        )}&key=AIzaSyCfoOZmSBlNKkgaXAu_kuH2R3O7r17PCyc`
+      )
+      .then((response) => {
+        const data = response.data;
+        if (data.status === "OK") {
+          const { lat, lng } = data.results[0].geometry.location;
+          // let newLocations;
+          // if (route.params.locations.length === 2) {
+          //     newLocations = [
+          //       route.params.locations[0],
+          //       { latitude: lat, longitude: lng, identifier:lng.toString()}
+          //     ];
+          //   } else {
+          //     newLocations = [
+          //       ...route.params.locations,
+          //       { latitude: lat, longitude: lng , identifier:lng.toString()}
+          //     ];
+          //   }
+          navigation.navigate("Home", {
+            // locations: newLocations,
+            current: route.params.current,
+            destination: { latitude: lat, longitude: lng, identifier:lng.toString()},
+            destinationName: dest,
+          });
+        } else {
+          console.error(`Geocoding failed: ${data.status}`);
+        }
+      })
+      .catch((error) => console.error(`Geocoding error: ${error}`));
+  }
+  // const [newLocations, setNewLocations] = useState(route.params.locations);
   return (
     <View>
       <StatusBar hidden />
       <HeaderBar>
-        <TouchableOpacity onPress={() => navigation.navigate("Home",  { locations: newLocations })}>
+        <TouchableOpacity
+          onPress={() =>
+            // navigation.navigate("Home", { locations: newLocations })
+            // Ирснийг нь яг ирснээр нь буцаав. 
+            navigation.navigate("Home", route.params)
+          }
+        >
           <AntDesign name="arrowleft" size={26} color="white" />
         </TouchableOpacity>
       </HeaderBar>
@@ -81,7 +99,6 @@ const SearchScreen = ({ navigation, route }) => {
         handleInputChange={handleInputChange}
       />
       <FlatList
-        // Одоо эндээсээ сонгодог болгох хэрэгтэй.
         data={suggestions}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -90,9 +107,7 @@ const SearchScreen = ({ navigation, route }) => {
             }}
             style={styles.item}
           >
-            <Text>
-                {item}
-            </Text>
+            <Text>{item}</Text>
           </TouchableOpacity>
         )}
         keyExtractor={(item, index) => index}

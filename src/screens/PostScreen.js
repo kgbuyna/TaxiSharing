@@ -32,28 +32,22 @@ export default function PostScreen({ navigation, route }) {
   const [initialRegion, setInitialRegion] = useState({});
 
   const [polylineCoordinates, setPolylineCoordinates] = useState([]);
-  const setMapMidPoint = (location) => {
-    // if (location.length === 1)
-    setRegion(location[0]);
-    setInitialRegion(location[0]);
-    setRegion((prevRegion) => ({
-      ...prevRegion,
-      latitudeDelta: 0.005,
-      longitudeDelta: 0.005,
-    }));
-  };
 
   useEffect(() => {
-    setLocation(route.params.locations);
-    setMapMidPoint(route.params.locations);
+    setRegion({
+      ...route.params.current,
+      latitudeDelta: 0.005,
+      longitudeDelta: 0.005,
+    });
+    setInitialRegion(route.params.current);
     setPolylineCoordinates(route.params.polylineCoordinates);
-  }, [route.params.locations]);
+  }, [route.params.current]);
 
   return (
     <View style={styles.container}>
       <HeaderBar>
         <TouchableOpacity
-          onPress={() => navigation.navigate("Home", { locations: location })}
+          onPress={() => navigation.navigate("Home", route.params)}
         >
           <AntDesign name="arrowleft" size={26} color="white" />
         </TouchableOpacity>
@@ -75,19 +69,17 @@ export default function PostScreen({ navigation, route }) {
         />
       )}
       <MapView
-        // ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         region={region}
-        // onMapReady={onMapReady}
-        key={JSON.stringify(location)}
+        key={JSON.stringify(route.params.destination)}
         onRegionChange={(region) => {
           console.log(region);
           setInitialRegion(region);
         }}
         onRegionChangeComplete={(region) => {
           // Энд болохоор polylineCoordinates эндээс эхээ авах ёстой болно. Тэгээд энэ цэгээ буцаагаад homeScreen рүү гээ явуулах ёстой юм болов уу? За юу ч гэсэн постоо оруулахад бэлэн болгох.
-          // Асуулт байгаа нь болохоор энэ сонгосон байрлалаа ямар хувьсагчид хийх вэ? Ингэхээр баахан хувьсагч болж байгаа болохоор бараг миний бодлоор бүгдийг нь тус тусад нь нэг хувьсагч болгоод хийх хэрэгтэй юм шиг мэдрэмж төрөөд байгаа юм. Тэгж байж илүү ойлгомжтой болж байгаа юм. 
+          // Асуулт байгаа нь болохоор энэ сонгосон байрлалаа ямар хувьсагчид хийх вэ? Ингэхээр баахан хувьсагч болж байгаа болохоор бараг миний бодлоор бүгдийг нь тус тусад нь нэг хувьсагч болгоод хийх хэрэгтэй юм шиг мэдрэмж төрөөд байгаа юм. Тэгж байж илүү ойлгомжтой болж байгаа юм.
           console.log("complete");
         }}
       >
@@ -97,16 +89,20 @@ export default function PostScreen({ navigation, route }) {
           identifier={"region"}
           pinColor={"#FFFF00"}
         />
-        {location.map((loc, index) => {
-          // if (index !== 0)
-          return (
-            <Marker
-              coordinate={loc}
-              key={loc.longitude}
-              identifier={loc.identifier}
-            />
-          );
-        })}
+        {route.params.current && (
+          <Marker
+            coordinate={route.params.current}
+            key={route.params.current.longitude}
+            identifier={route.params.current.identifier}
+          />
+        )}
+        {route.params.destination && (
+          <Marker
+            coordinate={route.params.destination}
+            key={route.params.destination.longitude}
+            identifier={route.params.destination.identifier}
+          />
+        )}
         {polylineCoordinates ? (
           <Polyline
             coordinates={polylineCoordinates}

@@ -120,7 +120,7 @@ export default function HomeScreen({ route, navigation }) {
   const mapRef = useRef(null);
   const [current, setCurrent] = useState(null);
   const [destination, setDestination] = useState(null);
-  const [location, setLocation] = useState([]);
+  // const [location, setLocation] = useState([]);
   const [region, setRegion] = useState({
     latitude: 0,
     longitude: 0,
@@ -128,21 +128,21 @@ export default function HomeScreen({ route, navigation }) {
     longitudeDelta: 0.01,
   });
   const onMapReady = () => {
-    if (destination) {
+    if (route.params.destination) {
       const data = {
         origin: {
           location: {
             latLng: {
-              latitude: current.latitude,
-              longitude: current.longitude,
+              latitude: route.params.current.latitude,
+              longitude: route.params.current.longitude,
             },
           },
         },
         destination: {
           location: {
             latLng: {
-              latitude: destination.latitude,
-              longitude: destination.longitude,
+              latitude: route.params.destination.latitude,
+              longitude: route.params.destination.longitude,
             },
           },
         },
@@ -160,6 +160,7 @@ export default function HomeScreen({ route, navigation }) {
             "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline",
         },
       };
+
       axios
         .post(
           "https://routes.googleapis.com/directions/v2:computeRoutes",
@@ -167,6 +168,7 @@ export default function HomeScreen({ route, navigation }) {
           config
         )
         .then((response) => {
+          console.log("sending request");
           setPolylineCoordinates(
             polyline
               .decode(response.data.routes[0].polyline.encodedPolyline)
@@ -185,27 +187,36 @@ export default function HomeScreen({ route, navigation }) {
       // const markerNames = route.params.locations.map(
       //   (location) => location.identifier
       // );
-      const markerNames = [current.identifier, destination.identifier];
-
+      const markerNames = [
+        route.params.current.identifier,
+        route.params.destination.identifier,
+      ];
       mapRef.current.fitToSuppliedMarkers(markerNames, {
         edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
       });
     }
   };
 
-  const setMapMidPoint = (location) => {
-    // if (location && location.length === 1) setRegion(location[0]);
-    // setRegion(current);
+  // const setMapMidPoint = (location) => {
+  //   // if (location && location.length === 1) setRegion(location[0]);
+  //   // setRegion(current);
+  //   setRegion({
+  //     ...current,
+  //     latitudeDelta: 0.01,
+  //     longitudeDelta: 0.01,
+  //   });
+  // };
+  useEffect(() => {
+    console.log("Params Home:");
+    console.log(route.params);
+    // setLocation(route.params.locations);
+    // setMapMidPoint(route.params.current);
     setRegion({
-      ...current,
+      ...route.params.current,
       latitudeDelta: 0.01,
       longitudeDelta: 0.01,
     });
-  };
-  useEffect(() => {
-    setLocation(route.params.locations);
-    setMapMidPoint(route.params.current);
-  }, [route.params.locations]);
+  }, [route.params.current]);
   return (
     <View style={styles.container}>
       <StatusBar hidden />
@@ -216,8 +227,10 @@ export default function HomeScreen({ route, navigation }) {
       <SearchBar
         navigation={navigation}
         region={region}
-        locations={location}
-        searchText={route.params.destination}
+        // locations={location}
+        current={route.params.current}
+        destination={route.params.destination}
+        searchText={route.params.destinationName}
       />
       <MapView
         ref={mapRef}
@@ -225,15 +238,33 @@ export default function HomeScreen({ route, navigation }) {
         style={styles.map}
         region={region}
         onMapReady={onMapReady}
-        key={JSON.stringify(location)}
+        key={
+          route.params.destination
+            ? JSON.stringify(route.params.destination)
+            : JSON.stringify(route.params.current)
+        }
       >
-        {location.map((loc, index) => (
+        {/* {location.map((loc, index) => (
           <Marker
             coordinate={loc}
             key={loc.longitude}
             identifier={loc.identifier}
           />
-        ))}
+        ))} */}
+        {route.params.current && (
+          <Marker
+            coordinate={route.params.current}
+            key={route.params.current.longitude}
+            identifier={route.params.current.identifier}
+          />
+        )}
+        {route.params.destination && (
+          <Marker
+            coordinate={route.params.destination}
+            key={route.params.destination.longitude}
+            identifier={route.params.destination.identifier}
+          />
+        )}
         {polylineCoordinates ? (
           <Polyline
             coordinates={polylineCoordinates}
@@ -260,7 +291,8 @@ export default function HomeScreen({ route, navigation }) {
         <TouchableOpacity
           onPress={() => {
             navigation.navigate("Post", {
-              locations: location,
+              current: route.params.current,
+              destination: route.params.destination,
               polylineCoordinates: polylineCoordinates,
             });
           }}
