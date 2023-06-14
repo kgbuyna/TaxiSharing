@@ -27,7 +27,7 @@ export default function SplashScreen() {
         };
         navigation.navigate("Home", { current });
       });
-      setLocation(location);
+      // setLocation(location);
     }
 
     getLocationAsync()

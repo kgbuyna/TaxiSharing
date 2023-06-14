@@ -12,6 +12,7 @@
     "@expo/ngrok": "^4.1.0",
     "@expo/vector-icons": "^13.0.0",
     "@mapbox/polyline": "^1.2.0",
+    "@react-native-community/datetimepicker": "6.7.3",
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/native-stack": "^6.9.12",
     "axios": "^1.3.4",
@@ -26,7 +27,8 @@
     "react-native": "^0.71.7",
     "react-native-fast-image": "^8.6.3",
     "react-native-maps": "^1.3.2",
-    "@react-native-community/datetimepicker": "6.7.3"
+    "react-redux": "^8.1.0",
+    "redux": "^4.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

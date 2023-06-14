@@ -4,14 +4,14 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 function SearchBar({
   navigation,
-  current,
-  destination,
   style,
   screen,
   searchText,
   handleInputChange,
+  props,
   params
 }) {
+  
   return (
     <View style={[styles.searchContainer, style]}>
       <MaterialIcons name="place" size={24} color="black" />
@@ -25,7 +25,7 @@ function SearchBar({
         <TouchableOpacity
           style={styles.input}
           onPress={() => {
-            navigation.navigate("Search", {current, destination});
+            navigation.navigate("Search", props);
           }}
         >
           {searchText ? <Text>{searchText}</Text> : <></>}

@@ -15,14 +15,11 @@ import axios from "axios";
 const SearchScreen = ({ navigation, route }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [params, setParams] = useState([]);
   useEffect(() => {
-    console.log('Params:')
-    console.log(route.params)
     handleInputChange(searchText);
   }, [searchText]);
-  // Таны одоо байгаа газрын байршил
-  // Хүрэх газраа сонгоно уу?
-  // Тэр нь гараас орж ирсэн утга байх юм байна. Энэ функцийг яаж ажиллуулах вэ гэдэг нь сонирхолтой.
+
   function handleInputChange(value) {
     if (value.length >= 4) {
       axios
@@ -52,23 +49,16 @@ const SearchScreen = ({ navigation, route }) => {
         const data = response.data;
         if (data.status === "OK") {
           const { lat, lng } = data.results[0].geometry.location;
-          // let newLocations;
-          // if (route.params.locations.length === 2) {
-          //     newLocations = [
-          //       route.params.locations[0],
-          //       { latitude: lat, longitude: lng, identifier:lng.toString()}
-          //     ];
-          //   } else {
-          //     newLocations = [
-          //       ...route.params.locations,
-          //       { latitude: lat, longitude: lng , identifier:lng.toString()}
-          //     ];
-          //   }
           navigation.navigate("Home", {
-            // locations: newLocations,
-            current: route.params.current,
-            destination: { latitude: lat, longitude: lng, identifier:lng.toString()},
-            destinationName: dest,
+            ...route,
+            ...{
+              destination: {
+                latitude: lat,
+                longitude: lng,
+                identifier: lng.toString(),
+              },
+              destinationName: dest,
+            },
           });
         } else {
           console.error(`Geocoding failed: ${data.status}`);
@@ -84,7 +74,7 @@ const SearchScreen = ({ navigation, route }) => {
         <TouchableOpacity
           onPress={() =>
             // navigation.navigate("Home", { locations: newLocations })
-            // Ирснийг нь яг ирснээр нь буцаав. 
+            // Ирснийг нь яг ирснээр нь буцаав.
             navigation.navigate("Home", route.params)
           }
         >
@@ -103,7 +93,7 @@ const SearchScreen = ({ navigation, route }) => {
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => {
-              navigate(item, route);
+              navigate(item, route.params);
             }}
             style={styles.item}
           >
