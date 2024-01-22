@@ -9,11 +9,11 @@ import {
 } from "react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from "react-native-maps";
-import HeaderBar from "../components/HeaderBar";
 import { AntDesign } from "@expo/vector-icons";
 import Clock from "../components/Clock";
 import axios from "axios";
 import polyline from "@mapbox/polyline";
+import { computeRoutes } from "../api/requests";
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
@@ -22,7 +22,7 @@ const mapViewHeight = screenHeight * 0.55;
 
 export default function PostScreen({ navigation, route }) {
   const mapRef = useRef(null);
-
+  // route params base этр гэхгүйгээр тэр redux-г ашиглавал ямар вэ л гэж бодож байна даа. Тэгэхгүй бол хаана юу болоод байгаа нь аягүй ойлгомжгүй байна уу даа.
   const [region, setRegion] = useState({
     latitude: 0,
     longitude: 0,
@@ -37,7 +37,7 @@ export default function PostScreen({ navigation, route }) {
   const [base, setBase] = useState();
   const [hour, setHour] = useState(0);
   const [min, setMin] = useState(0);
-  // Одоо асуудлаа тодорхойлвол өөрчлөлт маань шууд орж ирэхгүй байна шүү дээ.
+
   useEffect(() => {
     setRegion({
       ...route.params.current,
@@ -51,16 +51,15 @@ export default function PostScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <HeaderBar>
+      {/* <HeaderBar>
         <TouchableOpacity
           onPress={() => navigation.navigate("Home", route.params)}
         >
           <AntDesign name="arrowleft" size={26} color="white" />
         </TouchableOpacity>
-      </HeaderBar>
+      </HeaderBar> */}
 
       <Clock hour={hour} min={min} setHour={setHour} setMin={setMin} />
-
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}
@@ -75,61 +74,33 @@ export default function PostScreen({ navigation, route }) {
         onRegionChangeComplete={(region) => {
           region["identifier"] = "base";
           setBase(region);
-          console.log("completed");
-          const data = {
+          const routeCoordinates = {
             origin: {
-              location: {
-                latLng: {
-                  latitude: region.latitude,
-                  longitude: region.longitude,
-                },
-              },
+              latitude: region.latitude,
+              longitude: region.longitude,
             },
             destination: {
-              location: {
-                latLng: {
-                  latitude: route.params.destination.latitude,
-                  longitude: route.params.destination.longitude,
-                },
-              },
-            },
-            travelMode: "DRIVE",
-            languageCode: "en-US",
-            units: "IMPERIAL",
-          };
-
-          const config = {
-            headers: {
-              "Content-Type": "application/json",
-              "X-Goog-Api-Key": "AIzaSyCfoOZmSBlNKkgaXAu_kuH2R3O7r17PCyc",
-              "X-Goog-FieldMask":
-                "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline",
+              latitude: route.params.destination.latitude,
+              longitude: route.params.destination.longitude,
             },
           };
-
-          axios
-            .post(
-              "https://routes.googleapis.com/directions/v2:computeRoutes",
-              data,
-              config
-            )
-            .then((response) => {
-              setPolylineCoordinates(
-                polyline
-                  .decode(response.data.routes[0].polyline.encodedPolyline)
-                  .map((point) => {
-                    return {
-                      latitude: point[0],
-                      longitude: point[1],
-                    };
-                  })
-              );
+          try {
+            computeRoutes(routeCoordinates).then((encodedPolyline) => {
+              const polylineCoordinates = polyline
+                .decode(encodedPolyline)
+                .map((point) => {
+                  return {
+                    latitude: point[0],
+                    longitude: point[1],
+                  };
+                });
+              setPolylineCoordinates(polylineCoordinates);
               route.params["polylineCoordinates"] = polylineCoordinates;
               setBase(region);
-            })
-            .catch((error) => {
-              console.log(error);
             });
+          } catch (error) {
+            console.log(error);
+          }
         }}
       >
         <Marker
@@ -162,7 +133,7 @@ export default function PostScreen({ navigation, route }) {
               {
                 icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 4 },
                 offset: "0",
-                repeat: "20px",
+                repeat: 20,
               },
             ]}
           />
@@ -182,40 +153,21 @@ export default function PostScreen({ navigation, route }) {
 
         <TouchableOpacity
           onPress={() => {
-            console.log("route params from post");
-            console.log(route.params);
             axios
-              .post(
-                "https://routes.googleapis.com/directions/v2:computeRoutes",
-                {
-                  // Энэ user гэдгийг тэр state manager ашиглаж хийх хэрэгтэй бололтой тэгж байж арай цэвэрхэн болох юм шиг санагдаж байна. Тэгвэл дэлгэц хооронд төвөгтэй олон мэдээлэл зөөх багасах байх гэж бодож байна. Одоо яг хаана юу байгаа нь аягүй хэцүү л санагдаж байна. 
-                  // "user": ,
-                  "location": {
-                    "type": "Point",
-                    "coordinates": [56, 58] 
-                    },
-                    "time":"18-00"
+              .post("http://192.168.1.13:3000/api/v1/posts/", {
+                location: {
+                  latitude: base.latitude,
+                  longitude: base.longitude,
                 },
-                config
-              )
-              .then((response) => {
-                setPolylineCoordinates(
-                  polyline
-                    .decode(response.data.routes[0].polyline.encodedPolyline)
-                    .map((point) => {
-                      return {
-                        latitude: point[0],
-                        longitude: point[1],
-                      };
-                    })
-                );
-                route.params["polylineCoordinates"] = polylineCoordinates;
-                setBase(region);
+                time: {
+                  hour: hour,
+                  minute: min,
+                },
               })
+              .then((response) => {})
               .catch((error) => {
                 console.log(error);
               });
-            // Ингэхэд ажиллаж байна гэхээр их сонин юм тэ?
             navigation.navigate("Home", { ...route.params, ...{ base: base } });
           }}
           style={styles.button}

@@ -1,55 +1,63 @@
 import React, { useState } from "react";
-import { TextInput, View, StyleSheet, TouchableOpacity, Text } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import {
+  TextInput,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+} from "react-native";
 
+import { useNavigation } from "@react-navigation/native";
+import { terialIcons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 function SearchBar({
-  navigation,
   style,
-  screen,
   searchText,
   handleInputChange,
+  icon,
+  placeholderStyle,
+  placeholder,
   props,
-  params
+  params,
 }) {
-  
+  const navigation = useNavigation();
   return (
     <View style={[styles.searchContainer, style]}>
-      <MaterialIcons name="place" size={24} color="black" />
-      {screen ? (
-        <TextInput
-          style={styles.input}
-          value={searchText}
-          onChangeText={handleInputChange}
-        />
-      ) : (
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => {
-            navigation.navigate("Search", props);
-          }}
-        >
-          {searchText ? <Text>{searchText}</Text> : <></>}
-        </TouchableOpacity>
-      )}
+      {icon && <AntDesign name="search1" size={28} color="#FFC700" />}
+      <TouchableOpacity
+        style={styles.input}
+        onPress={() => {
+          navigation.navigate("Search", props);
+        }}
+      >
+        <Text style={[styles.placeholder, placeholderStyle]}>
+          {placeholder}
+        </Text>
+      </TouchableOpacity>
+      {/* )} */}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   searchContainer: {
-    width: "80%",
     alignSelf: "center",
-    marginBottom: "5%",
     flexDirection: "row",
     alignItems: "center",
-    marginTop: "10%",
-    backgroundColor: "#f1f3f4",
+    backgroundColor: "#F6F6F6",
     borderWidth: "1px solid",
-    borderColor: "#dfe1e5",
+    borderColor: "#E8E8E8",
     borderRadius: 10,
     paddingLeft: "2%",
   },
+  placeholder: {
+    color: "#FFC700",
+    fontSize: 20,
+  },
   input: {
+    justifyContent: "center",
+    // alignItems:"center",
     width: "90%",
     height: 48,
     fontSize: 16,

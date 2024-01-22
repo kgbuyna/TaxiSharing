@@ -5,7 +5,7 @@ const SignUpScreen = ({ navigation }) => {
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-
+  // 
   const handleSubmitButton = () => {
     if (!password) {
       alert("Please fill Name");
