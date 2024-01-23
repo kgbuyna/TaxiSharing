@@ -2,15 +2,15 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 
-const currentLocationSlice = createSlice({
-  name: "currentLocation",
+const destinationLocationSlice = createSlice({
+  name: "destinationLocation",
   initialState: {
     latitude: null,
     longitude: null,
-    identifier: "current",
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-    name: "",
+    identifier: "dest",
+    name:"",
+    // latitudeDelta: 0.01,
+    // longitudeDelta: 0.01,
   },
   reducers: {
     updateLocation: (state, action) => {
@@ -25,7 +25,7 @@ const currentLocationSlice = createSlice({
   },
 });
 
-export const { updateLocation } = currentLocationSlice.actions;
-export const selectCurrentLocation = (state) => state.currentLocation;
+export const { updateLocation } = destinationLocationSlice.actions;
+export const selectDestinationLocation = (state) => state.destinationLocation;
 
-export default currentLocationSlice.reducer;
+export default destinationLocationSlice.reducer;

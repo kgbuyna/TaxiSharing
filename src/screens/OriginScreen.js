@@ -13,23 +13,33 @@ import { useSelector } from "react-redux";
 import { selectCurrentLocation } from "../../slices/currentLocationSlice";
 
 const OriginScreen = ({ navigation }) => {
+  // useEffect(() => {
+  //   navigation.pop()
+  
+  // }, [])
+  
   const currentLocation = useSelector(selectCurrentLocation);
   return (
     <View style={styles.container}>
       <StatusBar hidden />
 
-      <MapView style={styles.map} provider={PROVIDER_GOOGLE} region={currentLocation}>
+      <MapView
+        style={styles.map}
+        provider={PROVIDER_GOOGLE}
+        region={currentLocation}
+      >
         <Marker
           coordinate={currentLocation}
           key={currentLocation.longitude}
           identifier={currentLocation.identifier}
         />
       </MapView>
-
       <View style={styles.subContainer}>
         <SearchBar
-          placeholder={"Хүрэх газар"}
+          placeholder={currentLocation.name}
           icon={"search"}
+          
+          screen={"Origin"}
           placeholderStyle={{ color: "#FFC700" }}
           style={{
             width: wp("82%"),

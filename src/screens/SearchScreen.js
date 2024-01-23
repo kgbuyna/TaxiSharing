@@ -8,6 +8,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 // import SvgUri from 'react-native-svg-uri';
 import React, { useEffect, useState } from "react";
@@ -20,13 +24,18 @@ import axios from "axios";
 import Location from "../../assets/shape.svg";
 import { Entypo, Feather } from "@expo/vector-icons";
 import Constants from "expo-constants";
+// import { updateLocation } from "../../slices/destinationLocationSlice";
 
+import { updateLocation } from "../../slices/destinationLocationSlice";
+
+import { useDispatch } from "react-redux";
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
 const apiKey = Constants.expoConfig.extra.API_KEY;
 
 const SearchScreen = ({ navigation, route }) => {
+  const dispatch = useDispatch();
   const [suggestions, setSuggestions] = useState([
     { name: "Тэнгис кино театр" },
     { name: "Тэди төв" },
@@ -34,19 +43,46 @@ const SearchScreen = ({ navigation, route }) => {
     { name: "Монгол Улсын Их Сургууль 2-р байр" },
     { name: "Өргөө кино театр" },
     { name: "ШУТИС" },
-    // { name: "Тэнгис кино театр"},
-    // { name: "Чингисийн талбай" }
+    { name: "Тэнгис кино театр"},
+    { name: "Чингисийн талбай" }
   ]);
   const [searchText, setSearchText] = useState("");
   const [params, setParams] = useState([]);
   useEffect(() => {
+    console.log(route)
     // handleInputChange(searchText);
   }, [searchText]);
   const renderItem = ({ item }) => (
-    <View
+    <TouchableOpacity
+      onPress={() => {
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/geocode/json?address=${item.name}&key=${apiKey}`
+          )
+          .then((response) => {
+            const data = response.data;
+            if (data.status === "OK") {
+              // const { lat, lng } = data.results[0].geometry.location;
+              dispatch(
+                updateLocation({
+                  latitude: data.results[0].geometry.location.lat,
+                  longitude: data.results[0].geometry.location.lng,
+                  identifier: "dest",
+                  name: item.name
+                })
+              );
+              console.log(data.results[0].geometry.location);
+              navigation.navigate("Home");
+            } else {
+              console.error(`Geocoding failed: ${data.status}`);
+            }
+          })
+          //
+          .catch((error) => console.error(`Geocoding error: ${error}`));
+      }}
       style={{
         paddingLeft: 20,
-        height: screenHeight * 0.11,
+        height: hp("10%"),
         borderBottomWidth: 1,
         borderBottomColor: "#ccc",
         flexDirection: "row",
@@ -54,7 +90,7 @@ const SearchScreen = ({ navigation, route }) => {
         alignItems: "center",
       }}
     >
-      <Location width={35} height={35} />
+      <Location width={wp("8%")} height={wp("8%")} />
       <View
         style={{
           flexDirection: "row",
@@ -68,7 +104,7 @@ const SearchScreen = ({ navigation, route }) => {
           {item.title ? (
             <>
               <Text
-                style={{ color: "#212121", fontWeight: "600", fontSize: 18 }}
+                style={{ color: "#212121", fontWeight: "600", fontSize: hp("2.5%") }}
               >
                 {item.title}
               </Text>
@@ -77,7 +113,7 @@ const SearchScreen = ({ navigation, route }) => {
                   color: "#616161",
                   opacity: "0.74%",
                   fontWeight: "500",
-                  fontSize: 14,
+                  fontSize: hp("2%"),
                 }}
               >
                 {item.name}
@@ -89,7 +125,7 @@ const SearchScreen = ({ navigation, route }) => {
                 color: "#616161",
                 opacity: "0.74%",
                 fontWeight: "500",
-                fontSize: 18,
+                fontSize: hp("2.5%"),
               }}
             >
               {item.name}
@@ -100,13 +136,17 @@ const SearchScreen = ({ navigation, route }) => {
       {/* < style={{flexDirection:'row', justifyContent:'flex-end'}}> */}
 
       {/* </View> */}
-    </View>
+    </TouchableOpacity>
   );
   function handleInputChange(value) {
     if (value.length >= 4) {
       axios
+        // .get(
+        //   `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${value}&components=country:mn&types=establishment&location=37.76999%2C-122.44696&key=${apiKey}`
+        // )
+        
         .get(
-          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${value}&components=country:mn&types=establishment&location=37.76999%2C-122.44696&key=${apiKey}`
+          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=МУИС&components=country:mn&types=establishment&location=37.76999%2C-122.44696&key=${apiKey}`
         )
         .then((response) => {
           const newSuggestions = response.data.predictions.map((el) => ({
@@ -124,40 +164,11 @@ const SearchScreen = ({ navigation, route }) => {
     }
     setSearchText(value);
   }
-  function navigate(dest, route) {
-    axios
-      .get(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-          dest
-        )}&key=${apiKey}`
-      )
-      .then((response) => {
-        const data = response.data;
-        if (data.status === "OK") {
-          const { lat, lng } = data.results[0].geometry.location;
-          navigation.navigate("Home", {
-            ...route,
-            ...{
-              destination: {
-                latitude: lat,
-                longitude: lng,
-                identifier: lng.toString(),
-              },
-              destinationName: dest,
-            },
-          });
-        } else {
-          console.error(`Geocoding failed: ${data.status}`);
-        }
-      })
-      //
-      .catch((error) => console.error(`Geocoding error: ${error}`));
-  }
   // const [newLocations, setNewLocations] = useState(route.params.locations);
   return (
     <View style={styles.container}>
       <StatusBar hidden />
-      <Header title={"Хүрэх газар"} route={route} screenName={"Origin"} />
+      <Header title={"Хүрэх газар"} route={route} screenName={"Origin"} fromWhere={route.params.previousScreen}/>
       <View style={styles.searchContainer}>
         <AntDesign name="search1" size={28} color="#FFC700" />
         <TextInput
@@ -167,14 +178,13 @@ const SearchScreen = ({ navigation, route }) => {
           value={searchText}
           onChangeText={handleInputChange}
         />
-        {/* <Text>Сүүлд хайсан</Text> */}
       </View>
       <FlatList
         data={suggestions}
         renderItem={renderItem}
         keyExtractor={(name, index) => index}
         style={{
-          marginHorizontal: "5%",
+          marginHorizontal: wp("5%"),
         }}
         // style={{height: 80, width: '100%'}}
       />
@@ -196,10 +206,10 @@ const styles = StyleSheet.create({
     marginLeft: 10, // Adjust as needed for spacing between icon and input
   },
   searchContainer: {
-    width: "93%",
-    height: "10%",
-    marginHorizontal: "5%",
-    marginTop: "6%",
+    width: wp("93%"),
+    height: hp("10%"),
+    // marginHorizontal: wp("14%"),
+    marginTop: hp("4%"),
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
@@ -207,6 +217,6 @@ const styles = StyleSheet.create({
     borderWidth: "1px solid",
     borderColor: "#E8E8E8",
     borderRadius: 10,
-    paddingLeft: "2%",
+    paddingLeft: wp("2%"),
   },
 });

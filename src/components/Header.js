@@ -4,7 +4,7 @@ import { loadFonts } from "../../expo-font";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useNavigation } from "@react-navigation/native";
-const Header = ({ route, screenName, title }) => {
+const Header = ({ route, screenName, title, fromWhere }) => {
   const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
@@ -24,17 +24,15 @@ const Header = ({ route, screenName, title }) => {
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.arrow}
-        onPress={() =>
-          // navigation.navigate("Home", { locations: newLocations })
-          // Ирснийг нь яг ирснээр нь буцаав.
-          navigation.navigate(screenName, route.params)
-        }
+        onPress={() => {
+          navigation.navigate(fromWhere);
+        }}
       >
         <Ionicons name="chevron-back" size={36} color="#FFC700" />
       </TouchableOpacity>
 
       <View style={{ alignItems: "center" }}>
-        <Text style={{ fontSize: 18, fontWeight: '700'}}>{ title }</Text>
+        <Text style={{ fontSize: 18, fontWeight: "700" }}>{title}</Text>
       </View>
     </View>
   );

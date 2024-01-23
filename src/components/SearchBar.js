@@ -19,7 +19,7 @@ function SearchBar({
   placeholderStyle,
   placeholder,
   props,
-  params,
+  screen
 }) {
   const navigation = useNavigation();
   return (
@@ -28,7 +28,8 @@ function SearchBar({
       <TouchableOpacity
         style={styles.input}
         onPress={() => {
-          navigation.navigate("Search", props);
+          // navigation.push("Search");
+          navigation.navigate("Search", {previousScreen: screen});
         }}
       >
         <Text style={[styles.placeholder, placeholderStyle]}>

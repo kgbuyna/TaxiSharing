@@ -19,42 +19,30 @@ import axios from "axios";
 import BotDot from "../../assets/botDot.svg";
 import TopDot from "../../assets/topDot.svg";
 import { computeRoutes } from "../api/requests";
+import { selectDestinationLocation } from "../../slices/destinationLocationSlice";
+import { selectCurrentLocation } from "../../slices/currentLocationSlice";
+
+import { useSelector } from "react-redux";
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
 const mapViewWidth = screenWidth;
 const mapViewHeight = screenHeight;
 export default function HomeScreen({ route, navigation }) {
+  const destinationLocation = useSelector(selectDestinationLocation);
+  const currentLocation = useSelector(selectCurrentLocation);
+
   const [polylineCoordinates, setPolylineCoordinates] = useState();
   const [walkingPolylineCoordinates, setWalkingPolylineCoordinates] = useState(
     []
   );
-
   const mapRef = useRef(null);
-  const [destination, setDestination] = useState(null);
   const [count, setCount] = useState(0);
-  const [region, setRegion] = useState({
-    latitude: 0,
-    longitude: 0,
-    latitudeDelta: 0.1,
-    longitudeDelta: 0.1,
-  });
   const [posts, setPosts] = useState([]);
   useEffect(() => {
-    setTimeout(() => {
-      console.log("timeout");
-      // mapRef.current.fitToSuppliedMarkers(markerNames, {
-      //   edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-      // });
-    }, "3000");
-    axios
-      .get("http://192.168.1.13:3000/api/v1/posts/")
-      .then((response) => {
-        setPosts(response.data);
-      })
-      .catch((error) => {
-        console.log("failed to retrieve posts");
-      });
+    // mapRef.current.fitToSuppliedMarkers(markerNames, {
+    //   edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+    // });
   }, []);
 
   useEffect(() => {
@@ -63,74 +51,77 @@ export default function HomeScreen({ route, navigation }) {
   //
   const onMapReady = () => {
     console.log("onMapReady");
-    if (route.params.base) {
-      const walkRouteCoordinates = {
-        origin: {
-          latitude: route.params.current.latitude,
-          longitude: route.params.current.longitude,
-        },
-        destination: {
-          latitude: route.params.base.latitude,
-          longitude: route.params.base.longitude,
-        },
-      };
-      const routeCoordinates = {
-        origin: {
-          latitude: route.params.base.latitude,
-          longitude: route.params.base.longitude,
-        },
-        destination: {
-          latitude: route.params.destination.latitude,
-          longitude: route.params.destination.longitude,
-        },
-      };
-      try {
-        computeRoutes(walkRouteCoordinates).then((encodedPolyline) => {
-          const polylineCoordinates = polyline
-            .decode(encodedPolyline)
-            .map((point) => {
-              return {
-                latitude: point[0],
-                longitude: point[1],
-              };
-            });
-          setWalkingPolylineCoordinates(polylineCoordinates);
-        });
-      } catch (error) {
-        console.log(error);
-      }
+    // if (route.params.base) {
+    //   const walkRouteCoordinates = {
+    //     origin: {
+    //       latitude: currentLocation.latitude,
+    //       longitude: currentLocation.longitude,
+    //     },
+    //     destination: {
+    //       latitude: destinationLocation.latitude,
+    //       longitude: destinationLocation.longitude,
+    //     },
+    //   };
+    //   const routeCoordinates = {
+    //     origin: {
+    //       latitude: currentLocation.latitude,
+    //       longitude: currentLocation.longitude,
+    //     },
+    //     destination: {
+    //       latitude: destinationLocation.latitude,
+    //       longitude: destinationLocation.longitude,
+    //     },
+    //   };
+    //   try {
+    //     computeRoutes(walkRouteCoordinates).then((encodedPolyline) => {
+    //       const polylineCoordinates = polyline
+    //         .decode(encodedPolyline)
+    //         .map((point) => {
+    //           return {
+    //             latitude: point[0],
+    //             longitude: point[1],
+    //           };
+    //         });
+    //       setWalkingPolylineCoordinates(polylineCoordinates);
+    //     });
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
 
-      try {
-        computeRoutes(routeCoordinates).then((encodedPolyline) => {
-          const polylineCoordinates = polyline
-            .decode(encodedPolyline)
-            .map((point) => {
-              return {
-                latitude: point[0],
-                longitude: point[1],
-              };
-            });
-          setPolylineCoordinates(polylineCoordinates);
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (route.params.destination) {
+    //   try {
+    //     computeRoutes(routeCoordinates).then((encodedPolyline) => {
+    //       const polylineCoordinates = polyline
+    //         .decode(encodedPolyline)
+    //         .map((point) => {
+    //           return {
+    //             latitude: point[0],
+    //             longitude: point[1],
+    //           };
+    //         });
+    //       setPolylineCoordinates(polylineCoordinates);
+    //     });
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // } 
+     if (destinationLocation) {
+      
       const markerNames = [
-        route.params.current.identifier,
-        route.params.destination.identifier,
+        currentLocation.identifier,
+        destinationLocation.identifier,
       ];
+      console.log(markerNames);
       mapRef.current.fitToSuppliedMarkers(markerNames, {
         edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
       });
       const routeCoordinates = {
         origin: {
-          latitude: route.params.current.latitude,
-          longitude: route.params.current.longitude,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
         },
         destination: {
-          latitude: route.params.destination.latitude,
-          longitude: route.params.destination.longitude,
+          latitude: destinationLocation.latitude,
+          longitude: destinationLocation.longitude,
         },
       };
       try {
@@ -144,20 +135,13 @@ export default function HomeScreen({ route, navigation }) {
               };
             });
           setPolylineCoordinates(polylineCoordinates);
-          setDestination(route.params.destination);
+          // setDestination(route.params.destination);
         });
       } catch (error) {
         console.log(error);
       }
     }
   };
-  useEffect(() => {
-    setRegion({
-      ...route.params.current,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
-  }, [route.params]);
 
   return (
     <View style={styles.container}>
@@ -166,29 +150,22 @@ export default function HomeScreen({ route, navigation }) {
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        region={region}
+        region={currentLocation}
         onMapReady={onMapReady}
         key={count}
       >
-        {route.params.current && (
+        {currentLocation && (
           <Marker
-            coordinate={route.params.current}
-            key={route.params.current.longitude}
-            identifier={route.params.current.identifier}
+            coordinate={currentLocation}
+            key={currentLocation.longitude}
+            identifier={currentLocation.identifier}
           />
         )}
-        {route.params.destination && (
+        {destinationLocation && (
           <Marker
-            coordinate={route.params.destination}
-            key={route.params.destination.longitude}
-            identifier={route.params.destination.identifier}
-          />
-        )}
-        {route.params.base && (
-          <Marker
-            coordinate={route.params.base}
-            key={route.params.base.longitude}
-            identifier={route.params.base.identifier}
+            coordinate={destinationLocation}
+            key={destinationLocation.longitude}
+            identifier={destinationLocation.identifier}
           />
         )}
         {polylineCoordinates ? (
@@ -207,7 +184,7 @@ export default function HomeScreen({ route, navigation }) {
         ) : (
           <></>
         )}
-        {walkingPolylineCoordinates ? (
+        {/* {walkingPolylineCoordinates ? (
           <Polyline
             coordinates={walkingPolylineCoordinates}
             strokeWidth={5}
@@ -223,23 +200,9 @@ export default function HomeScreen({ route, navigation }) {
           />
         ) : (
           <></>
-        )}
+        )} */}
       </MapView>
 
-      {/* <View style={styles.searchContainer}>
-        <TouchableOpacity onPress={()=>{navigation.navigate("Search", route.params)}}>
-          <SearchBar
-            navigation={navigation}
-            props={route.params}
-            icon={"search"}
-            
-            placeholder={"Хүрэх газар"}
-            placeholderStyle={{color: "#FFC700"}}
-            searchText={route.params.destinationName}
-            style={styles.searchBar} 
-          />
-        </TouchableOpacity>
-      </View> */}
       <View
         style={{
           width: "100%",
@@ -259,7 +222,16 @@ export default function HomeScreen({ route, navigation }) {
           left: 0,
         }}
       >
-        <View style={{position:'absolute', top: '25%', left:0, width:10, height: 100, backgroundColor:"#E5E5E5"}}></View>
+        <View
+          style={{
+            position: "absolute",
+            top: "25%",
+            left: 0,
+            width: 10,
+            height: 100,
+            backgroundColor: "#E5E5E5",
+          }}
+        ></View>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TopDot height={15} width={15} style={{ marginRight: 10 }} />
           <SearchBar
@@ -274,12 +246,13 @@ export default function HomeScreen({ route, navigation }) {
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <BotDot height={15} width={15} style={{ marginRight: 10 }} />
           <SearchBar
-            placeholder={"Хүрэх газар"}
+            placeholder={destinationLocation.name}
             placeholderStyle={{ color: "#FFC700" }}
             style={{
               width: screenWidth * 0.82,
               height: screenHeight * 0.08,
             }}
+            screen={"Home"}
           />
         </View>
       </View>
