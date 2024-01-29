@@ -9,6 +9,11 @@ import {
   TouchableOpacity,
   Text,
 } from "react-native";
+
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from "react-native-maps";
 import SearchBar from "../components/SearchBar";
 import Profile from "../components/Profile";
@@ -22,7 +27,9 @@ import { computeRoutes } from "../api/requests";
 import { selectDestinationLocation } from "../../slices/destinationLocationSlice";
 import { selectCurrentLocation } from "../../slices/currentLocationSlice";
 
+import FindPartnerButton from "../components/FindPartnerButton";
 import { useSelector } from "react-redux";
+import PostList from "../components/PostList";
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
@@ -103,9 +110,8 @@ export default function HomeScreen({ route, navigation }) {
     //   } catch (error) {
     //     console.log(error);
     //   }
-    // } 
-     if (destinationLocation) {
-      
+    // }
+    if (destinationLocation) {
       const markerNames = [
         currentLocation.identifier,
         destinationLocation.identifier,
@@ -203,6 +209,9 @@ export default function HomeScreen({ route, navigation }) {
         )} */}
       </MapView>
 
+      <FindPartnerButton
+        style={{ position: "absolute", zIndex: 100, top: hp("48%"), left: wp("23%")}}
+      />
       <View
         style={{
           width: "100%",
@@ -218,11 +227,11 @@ export default function HomeScreen({ route, navigation }) {
           backgroundColor: "#FFFFFF",
           position: "absolute",
           zIndex: 100,
-          bottom: 0,
+          bottom: hp("22%"),
           left: 0,
         }}
       >
-        <View
+        {/* <View
           style={{
             position: "absolute",
             top: "25%",
@@ -231,9 +240,9 @@ export default function HomeScreen({ route, navigation }) {
             height: 100,
             backgroundColor: "#E5E5E5",
           }}
-        ></View>
+        ></View> */}
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TopDot height={15} width={15} style={{ marginRight: 10 }} />
+          {/* <TopDot height={15} width={15} style={{ maiginRight: 10 }} /> */}
           <SearchBar
             placeholder={"Гэр"}
             placeholderStyle={{ color: "#11AABE" }}
@@ -244,7 +253,7 @@ export default function HomeScreen({ route, navigation }) {
           />
         </View>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <BotDot height={15} width={15} style={{ marginRight: 10 }} />
+          {/* <BotDot height={15} width={15} style={{ marginRight: 10 }} /> */}
           <SearchBar
             placeholder={destinationLocation.name}
             placeholderStyle={{ color: "#FFC700" }}
@@ -256,6 +265,7 @@ export default function HomeScreen({ route, navigation }) {
           />
         </View>
       </View>
+      <PostList style={{position:'absolute', zIndex:1010, bottom:0, left: 0}}></PostList>
       {/* <View style={{ flexDirection: "row" }}>
         <TouchableOpacity
           onPress={() => {
@@ -308,7 +318,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: mapViewWidth,
-    height: mapViewHeight,
+    height: mapViewHeight*0.6,
   },
   address: {
     padding: 10,

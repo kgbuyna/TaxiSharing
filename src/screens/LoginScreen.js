@@ -1,74 +1,203 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
-
+import React, { useState, useRef } from "react";
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
+import Button from "../components/Button";
+import axios from "axios";
+import Message from "../components/Message";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 const LoginScreen = ({ navigation }) => {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [focus, setFocus] = useState(0);
+  const [messageVisible, setMessageVisible] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isSuccessful, setIsSuccessful] = useState(false);
 
-  const handleLogin = () => {
-    // Handle login logic here
+  const phoneNumberRef = useRef(null);
+  const passwordRef = useRef(null);
+
+  const handleFocus = (event) => {
+    console.log(event.nativeEvent.target);
+    setFocus(event.nativeEvent.target);
   };
 
+  const handleBlur = () => {
+    console.log("blur");
+    setFocus(0);
+  };
+  const handlePhoneNumberSubmit = () => {
+    passwordRef.current.focus();
+  };
+
+  const closeMessageModal = () => {
+    setMessageVisible(false);
+  };
+  const showMessageModal = (message) => {
+    setMessage(message);
+    setMessageVisible(true);
+  };
+  const handleLogin = () => {
+    const isValidPassword = password.length > 0;
+    const isValidPhoneNumber = /^[0-9]+$/.test(phoneNumber);
+    const isValidPhoneNumberLength = phoneNumber.length >= 8;
+    const isTherePhoneNumber = phoneNumber.length > 0;
+    // const isValidPhoneNumberLength = phoneNumber.length >= 8;
+    if (!isTherePhoneNumber) {
+      showMessageModal("Утасны дугаараа оруулна уу");
+    } else if (!isValidPhoneNumberLength) {
+      // setPhoneNumber("");
+      showMessageModal("Утасны дугаар 8 оронтой байна.");
+    } else if (!isValidPhoneNumber) {
+      showMessageModal("Утасны дугаар зөвхөн тоо агуулна.");
+    } else if (!isValidPassword) {
+      setPassword("");
+      showMessageModal("Нууц үгээ оруулна уу.");
+    } else {
+      axios
+        .post("http://localhost:3000/api/v1/", {
+          phone: phoneNumber,
+          password: password,
+        })
+        .then((response) => {
+          if (response.status === "success") {
+            console.log("Login Successful. Please Login to proceed");
+            navigation.navigate("Splash");
+          } else {
+            console.log("Login Failed");
+            setIsSuccessful(false);
+            setMessageVisible(true);
+            setMessage("Нэвтрэх нэр эсвэл нууц үг буруу байна");
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+    //{}
+  };
+  // const borderColor = isFocused ? "#FFC700" : "#ffffff";
+
   const handleSignUpLinkPress = () => {
-    navigation.navigate('SignUp');
+    navigation.navigate("SignUp");
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Phone Number"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <Button title="Login" onPress={handleLogin} />
-      <Text style={styles.signUpLink}>
-        Don't have an account?{' '}
-        <Text
-          style={styles.signUpLinkText}
-          onPress={handleSignUpLinkPress}
+    <TouchableWithoutFeedback
+      onPress={() => {
+        setFocus(0);
+        Keyboard.dismiss();
+      }}
+      //   behavior={Platform.OS === "ios" ? "padding" : "height"}
+      //   style={{ flex: 1 }}
+    >
+      <View style={styles.container}>
+        <Message
+          isVisible={messageVisible}
+          message={message}
+          onClose={closeMessageModal}
+          isSuccessful={isSuccessful}
+        />
+        <View
+          style={[
+            {
+              height: hp("25%"),
+              width: "100%",
+              alignItems: "center",
+            },
+          ]}
         >
-          Sign up here.
+          <Text style={styles.title}>Тавтай морилно уу</Text>
+        </View>
+        <View
+          style={{
+            height: hp("30%"),
+            justifyContent: "space-around",
+          }}
+        >
+          {/* <Text>{borderColor}fasdffasdfas fasdf a</Text> */}
+          <TextInput
+            ref={phoneNumberRef}
+            style={[styles.input, focus == 13 && { borderColor: "#FFC700" }]}
+            placeholder="Утас"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onSubmitEditing={handlePhoneNumberSubmit}
+            // key={1}
+          />
+          <TextInput
+            ref={passwordRef}
+            style={[styles.input, focus == 15 && { borderColor: "#FFC700" }]}
+            placeholder="Нууц үг"
+            value={password}
+            onChangeText={setPassword}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onSubmitEditing={handleLogin}
+            // secureTextEntry
+          />
+        </View>
+        <View
+          style={{
+            width: wp("84%"),
+            justifyContent: "flex-end",
+            margin: hp("2.5%"),
+          }}
+        >
+          <Text style={{ fontSize: 13, color: "#0D0140", textAlign: "right" }}>
+            Нууц үг мартсан
+          </Text>
+        </View>
+        <View style={{ height: hp("2%") }}></View>
+        <Button title={"Нэвтрэх"} active={true} onPress={handleLogin} />
+        <View style={{ height: hp("2%") }}></View>
+        <Text style={styles.signUpLinkText} onPress={handleSignUpLinkPress}>
+          Шинээр бүртгүүлэх
         </Text>
-      </Text>
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
+    // position: "relative",
+    alignItems: "center",
+    // justifyContent: "center",
+    backgroundColor: "#F9F9F9",
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    top: "50%",
+    fontSize: hp("5%"),
+    fontWeight: "bold",
+    color: "#0D0140",
   },
   input: {
-    width: '80%',
-    height: 50,
+    paddingLeft: wp("6%"),
+    width: wp("84%"),
+    height: hp("10%"),
+    // fontSize: hp("3%"),
+
+    fontSize: hp("2.5%"),
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 20,
-  },
-  signUpLink: {
-    marginTop: 20,
+    borderColor: "#ffffff",
+    borderRadius: 10,
   },
   signUpLinkText: {
-    color: 'blue',
+    color: "#FFC700",
   },
 });
 

@@ -1,6 +1,4 @@
 // NODE_ENV=development npx expo start --tunnel
-
-import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import SplashScreen from "./src/screens/SplashScreen";

@@ -6,23 +6,34 @@ import {
 
 import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from "react-native-maps";
 import SearchBar from "../components/SearchBar";
-
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
+import ChatIcon from "../components/ChatIcon";
 import { useSelector } from "react-redux";
 import { selectCurrentLocation } from "../../slices/currentLocationSlice";
 
 const OriginScreen = ({ navigation }) => {
   // useEffect(() => {
   //   navigation.pop()
-  
-  // }, [])
-  
+
+  // }, [])i
+
   const currentLocation = useSelector(selectCurrentLocation);
   return (
     <View style={styles.container}>
       <StatusBar hidden />
-
+      <TouchableOpacity
+        style={{
+          position: "absolute",
+          zIndex: 100,
+          left: wp("72%"),
+          // top: hp("0.5%"),
+        }}
+      >
+        <ChatIcon unreadMsg={2} />
+      </TouchableOpacity>
+      {/* <TouchableOpacity style={{ position: "absolute", zIndex: 100 }}> */}
+      {/* </TouchableOpacity> */}
       <MapView
         style={styles.map}
         provider={PROVIDER_GOOGLE}
@@ -38,7 +49,6 @@ const OriginScreen = ({ navigation }) => {
         <SearchBar
           placeholder={currentLocation.name}
           icon={"search"}
-          
           screen={"Origin"}
           placeholderStyle={{ color: "#FFC700" }}
           style={{
