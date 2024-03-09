@@ -1,0 +1,36 @@
+--- a/node_modules/react-native-gifted-chat/lib/Composer.js
++++ b/node_modules/react-native-gifted-chat/lib/Composer.js
+@@ -30,21 +30,23 @@
+     },
+ });
+ export function Composer({ composerHeight = MIN_COMPOSER_HEIGHT, disableComposer = false, keyboardAppearance = 'default', multiline = true, onInputSizeChanged = () => { }, onTextChanged = () => { }, placeholder = DEFAULT_PLACEHOLDER, placeholderTextColor = Color.defaultColor, text = '', textInputAutoFocus = false, textInputProps = {}, textInputStyle, }) {
+-    const layoutRef = useRef();
+-    const handleOnLayout = useCallbackOne(({ nativeEvent: { layout } }) => {
++    const dimensionsRef = useRef();
++    const determineInputSizeChange = useCallbackOne((dimensions) => {
+         // Support earlier versions of React Native on Android.
+-        if (!layout) {
++        if (!dimensions) {
+             return;
+         }
+-        if (!layoutRef ||
+-            (layoutRef.current &&
+-                (layoutRef.current.width !== layout.width ||
+-                    layoutRef.current.height !== layout.height))) {
+-            layoutRef.current = layout;
+-            onInputSizeChanged(layout);
++        if (!dimensionsRef ||
++            !dimensionsRef.current ||
++            (dimensionsRef.current &&
++                (dimensionsRef.current.width !== dimensions.width ||
++                    dimensionsRef.current.height !== dimensions.height))) {
++            dimensionsRef.current = dimensions;
++            onInputSizeChanged(dimensions);
+         }
+     }, [onInputSizeChanged]);
+-    return (<TextInput testID={placeholder} accessible accessibilityLabel={placeholder} placeholder={placeholder} placeholderTextColor={placeholderTextColor} multiline={multiline} editable={!disableComposer} onLayout={handleOnLayout} onChangeText={onTextChanged} style={[
++    const handleContentSizeChange = ({ nativeEvent: { contentSize }, }) => determineInputSizeChange(contentSize);
++    return (<TextInput testID={placeholder} accessible accessibilityLabel={placeholder} placeholder={placeholder} placeholderTextColor={placeholderTextColor} multiline={multiline} editable={!disableComposer} onContentSizeChange={handleContentSizeChange} onChangeText={onTextChanged} style={[
+             styles.textInput,
+             textInputStyle,
+             {
