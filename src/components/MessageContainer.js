@@ -1,6 +1,11 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { TouchableOpacity } from "react-native";
+import React, { useRef } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  TouchableOpacity,
+} from "react-native";
 import {
   Avatar,
   Bubble,
@@ -15,8 +20,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import CancelIcon from "../../assets/decline.svg";
-import AcceptIcon from "../../assets/accept.svg";
+import ChatMap from "./ChatMap";
 export const renderAvatar = (props) => (
   <Avatar
     {...props}
@@ -60,69 +64,7 @@ export const renderTime = (props) => {
 export const renderBubble = (props) => {
   const { currentMessage } = props;
   if (currentMessage.map) {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        style={{
-          ...styles.mapContainer,
-          borderBottomLeftRadius: props.currentMessage.user._id === 2 ? 15 : 15,
-          borderBottomRightRadius:
-            props.currentMessage.user._id === 2 ? 15 : 15,
-        }}
-        onPress={() => {}}
-      >
-        <View style={{ flexDirection: "column" }}>
-          <Text
-            style={{
-              height: wp("6%"),
-              fontSize: 16,
-
-              marginTop: 5,
-              marginBottom: 5,
-              marginLeft: 10,
-              marginRight: 10,
-              color: "#f5f5f5",
-            }}
-          >
-            Цуг таксидах уу?
-          </Text>
-        </View>
-        <MapView provider={PROVIDER_GOOGLE} style={styles.map}></MapView>
-        <View style={{ flexDirection: "row" }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[
-              styles.button,
-              {
-                backgroundColor: "#ffffff",
-                borderBottomLeftRadius: 15,
-                alignItems: "center",
-              },
-            ]}
-          >
-            {/* <View style={{ width: "50%" }}> */}
-              <CancelIcon width={"80%"} height={"80%"} />
-            {/* </View> */}
-
-            {/* <Text style={{ color: "white", textAlign: "center" }}>Тийм</Text> */}
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[
-              styles.button,
-              {
-                alignItems: "center",
-              },
-            ]}
-          >
-            {/* <View style={{ width: "50%" }}> */}
-              <AcceptIcon width={"80%"} height={"80%"} />
-            {/* </View> */}
-            {/* <Text style={{ color: "white", textAlign: "center" }}>Үгүй</Text> */}
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    );
+    return <ChatMap />;
   }
   return (
     <Bubble
@@ -132,12 +74,24 @@ export const renderBubble = (props) => {
         right: { color: "#ffffff" },
       }}
       wrapperStyle={{
-        left: { backgroundColor: "#FAFAFA", borderRadius: 15 },
-        right: { backgroundColor: "#FAFAFA", borderRadius: 15 },
+        left: {
+          backgroundColor: "#FAFAFA",
+          borderRadius: 15,
+          marginTop: hp("1%"),
+          marginBottom: hp("1%"),
+        },
+        right: {
+          backgroundColor: "#FAFAFA",
+          borderRadius: 15,
+          marginTop: hp("1%"),
+          marginBottom: hp("1%"),
+        },
       }}
     />
   );
 };
+
+// export default RenderBubble;
 
 export const renderMessageText = (props) => (
   <MessageText
@@ -168,15 +122,5 @@ const styles = StyleSheet.create({
     width: "50%",
     justifyContent: "center",
     // borderRadius:15,
-  },
-  mapContainer: {
-    // flex: 1,
-    width: wp("84%"),
-    backgroundColor: "#11AABE",
-
-    height: hp("33%"),
-    // maxWidth: 300,
-    // marginVertical: 2,
-    borderRadius: 15,
   },
 });

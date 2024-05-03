@@ -1,1 +1,15 @@
-<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="#11AABE"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs> <style>.cls-1{fill:none;stroke:#11AABE;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.7600000000000002;}</style> </defs> <title></title> <g id="cross"> <line class="cls-1" x1="7" x2="25" y1="7" y2="25"></line> <line class="cls-1" x1="7" x2="25" y1="25" y2="7"></line> </g> </g></svg>
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="#11AABE">
+  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+  <g id="SVGRepo_iconCarrier">
+    <defs>
+      <style>.cls-1{fill:none;stroke:#11AABE;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.7600000000000002;}</style>
+    </defs> 
+    <title></title>
+    <g id="cross">
+      <!-- Adjusted coordinates to start from (0,0) -->
+      <line class="cls-1" x1="4" x2="28" y1="4" y2="28"></line>
+      <line class="cls-1" x1="4" x2="28" y1="28" y2="4"></line>
+    </g>
+  </g>
+</svg>

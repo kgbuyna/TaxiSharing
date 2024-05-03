@@ -7,6 +7,7 @@ import {
   Text,
 } from "react-native";
 
+// NODE_ENV=development npx expo start --tunnel
 import { useNavigation } from "@react-navigation/native";
 // import { terialIcons } from "@expo/vector-icons";
 // import { AntDesign } from "@expo/vector-icons";
@@ -38,13 +39,19 @@ function SearchBar({
             navigation.navigate("Search", { previousScreen: screen });
           }}
         >
-          <Text style={[styles.placeholder, placeholderStyle]} numberOfLines={1}>
+          <Text
+            style={[styles.placeholder, placeholderStyle]}
+            numberOfLines={1}
+          >
             {placeholder}
           </Text>
         </TouchableOpacity>
       ) : (
         <View style={styles.input}>
-          <Text style={[styles.placeholder, placeholderStyle]} numberOfLines={1}>
+          <Text
+            style={[styles.placeholder, placeholderStyle]}
+            numberOfLines={1}
+          >
             {placeholder}
           </Text>
         </View>
@@ -59,7 +66,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FfFfFf",
-    borderWidth: "1px solid",
+    borderWidth: 1,
     borderColor: "#E8E8E8",
     borderRadius: 10,
     // height: hp("8%"),

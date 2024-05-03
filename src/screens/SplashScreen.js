@@ -7,7 +7,8 @@ import { updateLocation } from "../../slices/currentLocationSlice";
 import Constants from "expo-constants";
 import axios from "axios";
 export default function SplashScreen() {
-  const dispatch = useDispatch();
+
+  const dispatch = useDispatch(); 
 
   const apiKey = Constants.expoConfig.extra.API_KEY;
   // const [location, setLocation] = useState({latitude: ,longitude: });

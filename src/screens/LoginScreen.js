@@ -15,14 +15,20 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import {
+  setPhoneNumber as setUserPhoneNumber,
+  setFirstName,
+  setUserId,
+} from "../../slices/userSlice";
+import { useDispatch } from "react-redux";
+
 const LoginScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [focus, setFocus] = useState(0);
-  const [messageVisible, setMessageVisible] = useState(false);
-  const [message, setMessage] = useState("");
-  const [isSuccessful, setIsSuccessful] = useState(false);
-
+  const [errorText, setErrorText] = useState({});
   const phoneNumberRef = useRef(null);
   const passwordRef = useRef(null);
 
@@ -39,54 +45,89 @@ const LoginScreen = ({ navigation }) => {
     passwordRef.current.focus();
   };
 
-  const closeMessageModal = () => {
-    setMessageVisible(false);
-  };
-  const showMessageModal = (message) => {
-    setMessage(message);
-    setMessageVisible(true);
+  const requirementSatisfied = (propertyName) => {
+    setErrorText((prevState) => {
+      const newState = { ...prevState };
+      if (propertyName in newState) delete newState[propertyName];
+      return newState;
+    });
   };
   const handleLogin = () => {
     // За ийм жижиг зүйл дээр санах зовохоо болих хэрэгтэй. Том зурагаараа юмаа харья тэгэх үү?
-    const isValidPassword = password.length > 0;
+    setFocus(0);
+    Keyboard.dismiss();
     const isValidPhoneNumber = /^[0-9]+$/.test(phoneNumber);
     const isValidPhoneNumberLength = phoneNumber.length >= 8;
-    const isTherePhoneNumber = phoneNumber.length > 0;
     // const isValidPhoneNumberLength = phoneNumber.length >= 8;
-    if (!isTherePhoneNumber) {
-      showMessageModal("Утасны дугаараа оруулна уу");
-    } else if (!isValidPhoneNumberLength) {
-      // setPhoneNumber("");
-      showMessageModal("Утасны дугаар 8 оронтой байна.");
+
+    if (phoneNumber.length == 0) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        phoneNumber: "Та утасны дугаараа оруулна уу",
+      }));
     } else if (!isValidPhoneNumber) {
-      showMessageModal("Утасны дугаар зөвхөн тоо агуулна.");
-    } else if (!isValidPassword) {
-      setPassword("");
-      showMessageModal("Нууц үгээ оруулна уу.");
+      setErrorText((prevState) => ({
+        ...prevState,
+        phoneNumber: "Утасны дугаар зөвхөн тоо агуулна",
+      }));
+    } else if (!isValidPhoneNumberLength) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        phoneNumber: "Таны оруулсан утасны дугаар алдаатай байна.",
+      }));
+    } else {
+      requirementSatisfied("phoneNumber");
+    }
+    if (password.length == 0) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        password: "Нууц үгээ оруулна уу?",
+      }));
     } else {
       axios
-        .post("http://localhost:3000/api/v1/", {
-          phone: phoneNumber,
-          password: password,
-        })
+        .post(
+          "http://10.0.2.2:3000/api/v1/login",
+          // localhost:3000/api/v1/login
+          {
+            phone: phoneNumber,
+            password: password,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
         .then((response) => {
-          if (response.status === "success") {
+          // 99243596
+          // 123456789
+          if (response.data.success) {
             console.log("Login Successful. Please Login to proceed");
+            console.log(response.data.user);
+            // setUserPhoneNumber(response.data.user.phone_number);
+            // setFirstName(response.data.user.name);
+
+            dispatch(setUserId(response.data.user.id));
+            dispatch(setUserPhoneNumber(response.data.user.phone_number));
+            dispatch(setFirstName(response.data.user.name));
             navigation.navigate("Splash");
           } else {
-            console.log("Login Failed");
-            setIsSuccessful(false);
-            setMessageVisible(true);
-            setMessage("Нэвтрэх нэр эсвэл нууц үг буруу байна");
+            setErrorText((prevState) => ({
+              ...prevState,
+              password: response.data.message,
+            }));
+            // setIsSuccessful(false);
+            setPassword("");
           }
         })
         .catch((error) => {
           console.log(error);
+          console.log(error.message);
         });
     }
     //{}
   };
-  // const borderColor = isFocused ? "#FFC700" : "#ffffff";
+  // const borderColor = isFocused ? "#11AABE" : "#ffffff";
 
   const handleSignUpLinkPress = () => {
     navigation.navigate("SignUp");
@@ -98,20 +139,12 @@ const LoginScreen = ({ navigation }) => {
         setFocus(0);
         Keyboard.dismiss();
       }}
-      //   behavior={Platform.OS === "ios" ? "padding" : "height"}
-      //   style={{ flex: 1 }}
     >
       <View style={styles.container}>
-        <Alert
-          isVisible={messageVisible}
-          message={message}
-          onClose={closeMessageModal}
-          isSuccessful={isSuccessful}
-        />
         <View
           style={[
             {
-              height: hp("25%"),
+              height: hp("18%"),
               width: "100%",
               alignItems: "center",
             },
@@ -119,40 +152,61 @@ const LoginScreen = ({ navigation }) => {
         >
           <Text style={styles.title}>Тавтай морилно уу</Text>
         </View>
-        <View
-          style={{
-            height: hp("30%"),
-            justifyContent: "space-around",
+
+        {/* <Text>{borderColor}fasdffasdfas fasdf a</Text> */}
+        <TextInput
+          ref={phoneNumberRef}
+          style={[
+            styles.input,
+            focus == "phoneNumber" && { borderColor: "#11AABE" },
+            errorText.hasOwnProperty("phoneNumber") && { borderColor: "red" },
+          ]}
+          placeholder="Утас"
+          value={phoneNumber}
+          onChangeText={(phoneNumber) => {
+            setPhoneNumber(phoneNumber);
+            requirementSatisfied("phoneNumber");
           }}
-        >
-          {/* <Text>{borderColor}fasdffasdfas fasdf a</Text> */}
-          <TextInput
-            ref={phoneNumberRef}
-            style={[styles.input, focus == "phoneNumber" && { borderColor: "#FFC700" }]}
-            placeholder="Утас"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            onFocus={(event) => {
-              handleFocus(event, "phoneNumber");
-            }}
-            onBlur={handleBlur}
-            onSubmitEditing={handlePhoneNumberSubmit}
-            // key={1}
-          />
-          <TextInput
-            ref={passwordRef}
-            style={[styles.input, focus == "password" && { borderColor: "#FFC700" }]}
-            placeholder="Нууц үг"
-            value={password}
-            onChangeText={setPassword}
-            onFocus={(event) => {
-              handleFocus(event, "password");
-            }}
-            onBlur={handleBlur}
-            onSubmitEditing={handleLogin}
-            // secureTextEntry
-          />
-        </View>
+          onFocus={(event) => {
+            handleFocus(event, "phoneNumber");
+            if (errorText.hasOwnProperty("phoneNumber")) {
+              console.log("sda");
+              setTimeout(() => {
+                setPhoneNumber("");
+              }, 100);
+            }
+          }}
+          onBlur={handleBlur}
+          onSubmitEditing={handlePhoneNumberSubmit}
+          // key={1}
+        />
+
+        <Text style={styles.errorMsg}>
+          {errorText.hasOwnProperty("phoneNumber") && errorText.phoneNumber}
+        </Text>
+        <TextInput
+          ref={passwordRef}
+          style={[
+            styles.input,
+            errorText.hasOwnProperty("password") && { borderColor: "red" },
+            focus == "password" && { borderColor: "#11AABE" },
+          ]}
+          placeholder="Нууц үг"
+          value={password}
+          onChangeText={(password) => {
+            setPassword(password);
+            requirementSatisfied("password");
+          }}
+          onFocus={(event) => {
+            handleFocus(event, "password");
+          }}
+          onBlur={handleBlur}
+          onSubmitEditing={handleLogin}
+          secureTextEntry
+        />
+        <Text style={styles.errorMsg}>
+          {errorText.hasOwnProperty("password") && errorText.password}
+        </Text>
         <View
           style={{
             width: wp("84%"),
@@ -185,24 +239,33 @@ const styles = StyleSheet.create({
   },
   title: {
     top: "50%",
-    fontSize: hp("5%"),
+    fontSize: hp("3.5%"),
     fontWeight: "bold",
     color: "#0D0140",
   },
   input: {
     paddingLeft: wp("6%"),
     width: wp("84%"),
-    height: hp("10%"),
+    height: hp("8%"),
+    // marginTop: hp("3%"),
     // fontSize: hp("3%"),
 
-    fontSize: hp("2.5%"),
+    fontSize: hp("2%"),
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#ffffff",
     borderRadius: 10,
   },
+
+  errorMsg: {
+    width: wp("84%"),
+    height: hp("4%"),
+    paddingLeft: wp("6%"),
+    color: "red",
+    fontSize: hp("1.6%"),
+  },
   signUpLinkText: {
-    color: "#FFC700",
+    color: "#11AABE",
   },
 });
 

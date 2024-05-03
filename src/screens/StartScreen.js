@@ -19,9 +19,37 @@ import { selectCurrentLocation } from "../../slices/currentLocationSlice";
 import ProfileButton from "../components/ProfileButton";
 import PostList from "../components/PostList";
 
+import { socket } from "../../socket";
 const StartScreen = ({ navigation }) => {
+  
   const currentLocation = useSelector(selectCurrentLocation);
-  console.log(currentLocation);
+  const [openProfile, setOpenProfile] = useState(false);
+  // console.log(currentLocation);
+
+  useEffect(() => {
+    function onConnect() {
+      setIsConnected(true);
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+    }
+
+    function onFooEvent(value) {
+      setFooEvents((previous) => [...previous, value]);
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("foo", onFooEvent);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("foo", onFooEvent);
+    };
+  }, []);
+
   return (
     <View style={styles.container}>
       <StatusBar hidden />
@@ -39,7 +67,12 @@ const StartScreen = ({ navigation }) => {
           paddingHorizontal: wp("7%"),
         }}
       >
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            setOpenProfile(!openProfile);
+          }}
+        >
           <ProfileIcon height="100%" width="100%" />
         </TouchableOpacity>
         <TouchableOpacity
@@ -49,7 +82,11 @@ const StartScreen = ({ navigation }) => {
               padding: wp("1%"),
             },
           ]}
-          onPress={() => navigation.navigate("Chat")}
+          // 99243596
+          // 123456789
+          onPress={() =>
+            navigation.navigate("ChatList", { fromWhere: "Start" })
+          }
         >
           <ChatIcon height="100%" width="100%" />
         </TouchableOpacity>
@@ -65,24 +102,35 @@ const StartScreen = ({ navigation }) => {
           identifier={currentLocation.identifier}
         />
       </MapView>
-      <View style={styles.subContainer}>
-        <SearchBar
-          placeholder={"Хүрэх газар"}
-          icon={"search"}
-          screen={"Start"}
-          placeholderStyle={{ color: "#11AABE" }}
-          style={{
-            width: wp("82%"),
-            height: hp("8%"),
-          }}
-        />
+      <View style={[styles.subContainer]}>
+        {openProfile ? (
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("Login");
+            }}
+          >
+            <Text style={{ fontSize: hp("3.5%"), fontWeight: "bold" }}>
+              Гарах
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <SearchBar
+            placeholder={"Хүрэх газар"}
+            icon={"search"}
+            screen={"Start"}
+            placeholderStyle={{ color: "#11AABE" }}
+            style={{
+              width: wp("82%"),
+              height: hp("8%"),
+            }}
+          />
+        )}
       </View>
-      <PostList
+      {/* <PostList
         style={{ position: "absolute", zIndex: 1010, bottom: 0, left: 0 }}
         // currentLocation={currentLocation}
         // destinationLocation={destinationLocation}
-      />
-      
+      /> */}
     </View>
   );
 };
@@ -111,12 +159,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     justifyContent: "space-around",
     height: hp("14%"),
-    borderTopRightRadius: "45%",
-    borderTopLeftRadius: "45%",
+    // height: hp("20%"),
+    borderTopStartRadius: 20,
+    borderTopEndRadius: 20,
     backgroundColor: "#FFFFFF",
     position: "absolute",
     zIndex: 100,
     bottom: 0,
+    // bottom: -hp("6%"),
     left: 0,
   },
   map: {

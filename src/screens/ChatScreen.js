@@ -20,6 +20,7 @@ import {
   Composer,
 } from "react-native-gifted-chat";
 
+// NODE_ENV=development npx expo start --tunnel
 import {
   renderInputToolbar,
   renderComposer,
@@ -42,43 +43,107 @@ import {
 } from "react-native-responsive-screen";
 import Header from "../components/Header";
 import ArrowRightIcon from "../../assets/arrowRight.svg";
-import { useRoute } from "@react-navigation/native";
+import { selectUser } from "../../slices/userSlice";
+import { useSelector } from "react-redux";
+import {
+  selectMessages,
+  addMessage,
+  updateMessage,
+} from "../../slices/messageSlice";
+import axios from "axios";
 
-const ChatScreen = ({ navigation }) => {
-  const [messages, setMessages] = useState([]);
-  const route = useRoute();
+const ChatScreen = ({ route, navigation }) => {
+  // const [messages, setMessages] = useState([]);
+  // const []
+  const [msgRefs, setMsgRefs] = useState([]);
+  const messages = useSelector(selectMessages);
+  const user = useSelector(selectUser);
+
+  const conversationId = route.params.conversationId;
+  const receiverId = route.params.receiverId;
   useEffect(() => {
-    setMessages([
-      {
-        _id: 1,
-        text: "Hello",
-        createdAt: new Date(),
-        map: true, 
-        user: {
-          _id: 1,
-          name: "React Nativ",
-        },
-      },
-      {
-        _id: 2,
-        text: "Hi REACT",
-        createdAt: new Date(),
-        user: {
-          _id: 1,
-          name: "React Nativ",
-        },
-      },
-    ]);
-  }, []);
+    // Order хийх хэрэгтэй байж болох юм.
+    if (!msgRefs.length) {
+      console.log(route.params);
+      console.log(`usingEffect`);
+      axios.get("http://10.0.2.2:3000/api/v1/chat/msgRefs").then((response) => {
+        if (response.data.success) {
+          setMsgRefs(response.data.messages);
+        } else {
+          console.log("first");
+        }
+      });
+    }
+    if (!messages.length) {
+      axios
+        .get("http://10.0.2.2:3000/api/v1/chat/", {
+          params: {
+            conversationId: conversationId,
+          },
+        })
+        .then((response) => {
+          if (response.data.success) {
+            console.log(response.data.messages);
+            response.data.messages.forEach((message) => {
+              message.text = message.Msgref.text;
+              // this is must. otherwise , it throws an error undefined key.
+              message._id = message.id;
+              message.user = {
+                _id: message.sender_id,
+              };
+            });
 
-  const onSend = useCallback((messages = []) => {
-    setMessages((previousMessages) =>
-      GiftedChat.append(previousMessages, messages)
+            // setMessages(response.data.messages);
+            updateMessage(response.data.messages);
+            // conversation.updatedAt өдрөө тодорхойлно.
+            // setConversations(response.data.conversations);
+          } else {
+            console.log("error on getting conversation");
+            console.log(response.data);
+          }
+        });
+    }
+
+    console.log(`converation id ${conversationId}`);
+    /*
+      setMessages([
+        {
+          _id: 1,
+          text: "Hello",
+          createdAt: new Date(),
+          map: true,
+          user: {
+            _id: 1,
+            name: "React Nativ",
+          },
+        },
+        {
+          _id: 2,
+          text: "Hi REACT",
+          createdAt: new Date(),
+          user: {
+            _id: 1,
+            name: "React Nativ",
+          },
+        },
+      ]);
+       */
+  }, [msgRefs]);
+
+  const onSend = useCallback((message = []) => {
+    message.user = {};
+    message._id = new Date();
+    message.user.id = user.id;
+    updateMessage((previousMessages) =>
+      GiftedChat.append(previousMessages, message)
     );
+    axios.post("http://10.0.2.2:3000/api/v1/chat/", {
+      conversationId: conversationId,
+      senderId: user.id,
+      receiverId: receiverId,
+      messageId: message.id,
+    });
   }, []);
-  // useEffect(() => {
-  //   console.log(messages);
-  // }, [messages]);
 
   return (
     <View style={{ backgroundColor: "#FAFAFA", height: "100%" }}>
@@ -95,7 +160,7 @@ const ChatScreen = ({ navigation }) => {
           renderBubble={renderBubble}
           infiniteScroll={false}
           user={{
-            _id: 1,
+            _id: user.id,
           }}
         />
       </View>
@@ -111,6 +176,8 @@ const ChatScreen = ({ navigation }) => {
         Мессеж сонгох
       </Text>
       <FlatList
+        data={msgRefs}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.ChatMessageSytemMessageContainer}
@@ -124,24 +191,6 @@ const ChatScreen = ({ navigation }) => {
             </View>
           </TouchableOpacity>
         )}
-        data={[
-          {
-            text: "Item 1",
-            createdAt: new Date(),
-            user: {
-              _id: 1,
-              name: "React Nativ",
-              // avatar: "https://placeimg.com/140/140/any",
-            },
-          },
-          { text: "Item 2" },
-          { text: "Item 3" },
-          { text: "Item 4" },
-          { text: "Item 5" },
-          { text: "Item 5" },
-          { text: "Item 5" },
-          { text: "Item 5" },
-        ]}
       />
     </View>
   );
@@ -154,7 +203,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    // padding: 10,
     height: hp("7%"),
     paddingHorizontal: wp("5%"),
     // backgroundColor: "#f4f4f4",

@@ -5,11 +5,14 @@ import {
   View,
   Animated,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 // import colors from "../theme.js";
 // import BigPost from "./BigPost.js";
 // import colors from "../../theme.js";
+
+// NODE_ENV=development npx expo start --tunnel
 
 import CallIcon from "../../assets/callIcon.svg";
 import colors, { primaryColor, secondaryColor } from "../../theme.js";
@@ -18,7 +21,6 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import Post from "./Post";
 import { Dimensions } from "react-native";
 
 import { useDispatch } from "react-redux";
@@ -92,15 +94,15 @@ const PostList = ({
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           {
-            useNativeDriver: true,
+            useNativeDriver: false,
           }
         )}
         onMomentumScrollEnd={(event) => {
           selectPosts(
-            Math.floor(event.nativeEvent.contentOffset.x / ITEM_WIDTH)
+            Math.round(event.nativeEvent.contentOffset.x / ITEM_WIDTH)
           );
           setPostsIndex(
-            Math.floor(event.nativeEvent.contentOffset.x / ITEM_WIDTH)
+            Math.round(event.nativeEvent.contentOffset.x / ITEM_WIDTH)
           );
         }}
         contentContainerStyle={{ paddingHorizontal: ITEM_WIDTH }}
@@ -164,14 +166,17 @@ const PostList = ({
                   alignItems: "center",
                 }}
                 onPress={() => {
-                  if (index === 0) {
-                    flatListRef.current.scrollToOffset({
-                      offset: 0,
-                      animated: true,
-                    });
-                  } else if (postsIndex !== index) {
-                    flatListRef.current.scrollToIndex({ index: index - 1 });
-                  } else {
+                  console.log(`index: ${index}`);
+                  console.log(`postsIndex: ${postsIndex}`);
+                  // !!!scrollToIndex({index : 0}) гэж ажиллахгүй байгаа тул ScrollToOffset гэж функц ашиглав.
+                  if (index == 0) {
+                    flatListRef.current.scrollToOffset({ offset: 0 });
+                    setPostsIndex(0);
+                    selectPosts(0);
+                  } else if (postsIndex != index) {
+                    flatListRef.current.scrollToIndex({ index: index });
+                    selectPosts(index);
+                    setPostsIndex(index);
                   }
                 }}
               >
@@ -187,13 +192,12 @@ const PostList = ({
                 >
                   <View style={styles.textContainer}>
                     {/* <Text style={styles.text}>~{originDistance}</Text> */}
-                    <Text style={styles.text}>~0.56</Text>
+                    <Text style={styles.text}>~5.6</Text>
                   </View>
                   <View style={styles.textContainer}>
-                    {/* <Text style={[styles.text, { color: secondaryColor }]}>
-                    ~{destinationDistance}
-                  </Text> */}
-                    <Text style={styles.text}>~0.56</Text>
+                    <Text style={[styles.text, { color: secondaryColor }]}>
+                      ~0.56
+                    </Text>
                   </View>
                 </View>
                 <Animated.View
@@ -209,17 +213,7 @@ const PostList = ({
                       height: hp("3%"),
                       left: "25%",
                     }}
-                    onPress={() => {
-                      if (index === 0) {
-                        flatListRef.current.scrollToOffset({
-                          offset: 0,
-                          animated: true,
-                        });
-                      } else if (postsIndex !== index) {
-                        flatListRef.current.scrollToIndex({ index: index - 1 });
-                      } else {
-                      }
-                    }}
+                    onPress={() => {}}
                   >
                     <CallIcon height="100%" width="100%" />
                   </TouchableOpacity>
@@ -230,25 +224,16 @@ const PostList = ({
                       justifyContent: "center",
                       left: "25%",
                     }}
+                    disabled={postsIndex !== index}
                     onPress={() => {
-                      if (index === 0) {
-                        flatListRef.current.scrollToOffset({
-                          offset: 0,
-                          animated: true,
-                        });
-                      } else if (postsIndex !== index) {
-                        flatListRef.current.scrollToIndex({ index: index - 1 });
-                      } else {
-                        console.log("huyeee"),
-                          navigation.navigate("Chat", {
-                            fromWhere: "Main",
-                            phoneNumber: item.phoneNumber,
-                            originLocation: item.originLocation,
-                            destinationLocation: item.destinationLocation,
-                            mateLocation: item.mateLocation,
-                            mateDestination: item.mateDestination,
-                          });
-                      }
+                      navigation.navigate("Chat", {
+                        fromWhere: "Main",
+                        phoneNumber: item.phoneNumber,
+                        originLocation: item.originLocation,
+                        destinationLocation: item.destinationLocation,
+                        mateLocation: item.mateLocation,
+                        mateDestination: item.mateDestination,
+                      });
                     }}
                   >
                     <SendIcon height="100%" width="100%" />
@@ -281,6 +266,7 @@ const styles = StyleSheet.create({
   textContainer: {
     borderWidth: 1,
     borderRadius: 30,
+    alignItems: "center",
     backgroundColor: "#F6F6F6",
     width: wp("10%"),
     height: hp("3%"),

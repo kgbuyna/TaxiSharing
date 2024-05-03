@@ -2,7 +2,7 @@ import axios from "axios";
 
 const config_route = {
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": "np",
     "X-Goog-Api-Key": "AIzaSyDMoUTcQYZFBK9rGZZeSSPPQf_PYaeyeiE",
     "X-Goog-FieldMask":
       "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline",

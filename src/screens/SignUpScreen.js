@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   TextInput,
@@ -18,99 +18,133 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
+import {
+  setPhoneNumber as setUserPhoneNumber,
+  setFirstName,
+  setUserId,
+} from "../../slices/userSlice";
+
+var validator = require("validator");
+
 const SignUpScreen = ({ navigation }) => {
   const [focus, setFocus] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  // state for email and firstName and lastName
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
 
   const firstNameRef = useRef(null);
-  const lastNameRef = useRef(null);
   const emailRef = useRef(null);
   const phoneNumberRef = useRef(null);
   const passwordRef = useRef(null);
-  //
-  const [error, setError] = useState("");
-  const [messageVisible, setMessageVisible] = useState(false);
-  const [message, setMessage] = useState("");
   const [isSuccessful, setIsSuccessful] = useState(false);
-  const [padding, setPadding] = useState("0%");
-
+  const [errorText, setErrorText] = useState({});
   const handleFocus = (event, focus) => {
     console.log(event.nativeEvent.target);
     setFocus(focus);
-    if (event.nativeEvent.target >= 19) setPadding("20%");
-    else {
-      setPadding("0%");
-    }
   };
 
   const handleBlur = () => {
     setFocus(0);
-    setPadding("0%");
-  };
-  const isValidEmail = (email) => {
-    // Regular expression for a basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
   };
 
-  const showMessageModal = (message) => {
-    setMessage(message);
-    setMessageVisible(true);
+  const requirementSatisfied = (propertyName) => {
+    setErrorText((prevState) => {
+      const newState = { ...prevState };
+      if (propertyName in newState) delete newState[propertyName];
+      return newState;
+    });
   };
-  const closeMessageModal = () => {
-    setMessageVisible(false);
-  };
+  // akah@gmaeil.com
   const handleSubmitButton = () => {
     setFocus(0);
-    setPadding("0%");
+
+    Keyboard.dismiss();
     const isValidPassword = password.length >= 8;
     const isValidPhoneNumber = /^[0-9]+$/.test(phoneNumber);
-    const isValidPhoneNumberLength = phoneNumber.length >= 8;
-    const isValidEmailFormat = isValidEmail(email);
+    const isValidPhoneNumberLength = phoneNumber.length == 8;
     const isFirstNameValid = firstName.length >= 1;
-    const isLastNameValid = lastName.length >= 1;
-
-    if (!isLastNameValid) {
-      showMessageModal("Та овгоо оруулна уу.");
-      setError("lastName");
-    } else if (!isFirstNameValid) {
-      showMessageModal("Та нэрээ оруулна уу.");
-
-      setError("firstName");
-    } else if (!isValidPhoneNumber) {
-      showMessageModal("Утасны дугаар зөвхөн тоо агуулна.");
-      setPhoneNumber("");
-      // setError(")
-      setError("phoneNumber");
-    } else if (!isValidPhoneNumberLength) {
-      showMessageModal("Утасны дугаар 8 оронтой байна.");
-      setPhoneNumber("");
-      setError("phoneNumber");
-    } else if (!isValidEmailFormat) {
-      setError("email");
-      showMessageModal("Цахим хаяг алдаатай байна.");
-    } else if (!isValidPassword) {
-      setError("password");
-      showMessageModal("Нууц үг 8 оронтой байна.");
+    if (firstName.length == 0) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        firstName: "Та нэрээ оруулна уу",
+      }));
+      // setError("firstName");
+    } else if (firstName.length < 4) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        firstName: "Нэр хамгийн багадаа 4 тэмдэгтээс бүрдэх ёстой.",
+      }));
+      // setError("firstName");
     } else {
+      requirementSatisfied("firstName");
+    }
+
+    if (phoneNumber.length == 0) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        phoneNumber: "Та утасны дугаараа оруулна уу",
+      }));
+      // setError("phoneNumber");
+    } else if (!isValidPhoneNumber) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        phoneNumber: "Утасны дугаар зөвхөн тоо агуулна",
+      }));
+      // setError("phoneNumber");
+    } else if (!isValidPhoneNumberLength) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        phoneNumber: "Таны оруулсан утасны дугаар алдаатай байна.",
+      }));
+      // setError("phoneNumber");
+    } else {
+      requirementSatisfied("phoneNumber");
+    }
+
+    if (email.length == 0) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        email: "Та цахим хаягаа оруулна уу",
+      }));
+    } else if (!validator.isEmail(email)) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        email: "Цахим хаяг алдаатай байна.",
+      }));
+    } else {
+      requirementSatisfied("email");
+    }
+    if (password.length == 0) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        password: "Та нууц үгээ оруулна уу",
+      }));
+    } else if (!isValidPassword) {
+      setErrorText((prevState) => ({
+        ...prevState,
+        password: "Нууц үг хамгийн багадаа 8 тэмдэгтээс бүтэх ёстой",
+      }));
+    } else {
+      requirementSatisfied("password");
+    }
+    // 992
+    if (Object.keys(errorText).length === 0) {
+      console.log("ready to sent");
       axios
-        .post("http://localhost:3000/api/v1/", {
+        .post("https://10.0.2.2:3000/api/v1/signup", {
           phone: phoneNumber,
           password: password,
           email: email,
-          firstName: firstName,
-          lastName: lastName,
+          name: firstName,
         })
         .then((response) => {
-          if (response.status === "success") {
-            setIsSuccessful(true);
+          console.log(response.data);
+          if (response.data.success) {
+            setUserId(response.data.user.id);
+            setUserPhoneNumber(response.data.user.phone_number);
+            setFirstName(response.data.user.name);
             timeout = setTimeout(() => {
-              showMessageModal("Бүртгэгдлээ");
               navigationService.navigate("Splash");
             }, 500);
           }
@@ -122,6 +156,11 @@ const SignUpScreen = ({ navigation }) => {
   };
 
   const handleLoginLinkPress = () => {
+    setEmail("");
+    setFirstName("");
+    setPhoneNumber("");
+    setPassword("");
+    setErrorText({});
     navigation.navigate("Login");
   };
 
@@ -129,135 +168,140 @@ const SignUpScreen = ({ navigation }) => {
     phoneNumberRef.current.focus();
   };
 
-  const handleLastNameSubmit = () => {
-    firstNameRef.current.focus();
-  };
-
   const handleEmailSubmit = () => {
+    validator.isEmail(email);
+    console.log(`email   is ${email} ${validator.isEmail(email)}`);
     passwordRef.current.focus();
   };
   const handlePhoneNumberSubmit = () => {
     emailRef.current.focus();
   };
-
   // modal for error message when login fails blurry background
   return (
     <TouchableWithoutFeedback
       onPress={() => {
         setFocus(0);
-        setPadding(0);
         Keyboard.dismiss();
       }}
-      //   behavior={Platform.OS === "ios" ? "padding" : "height"}
-      //   style={{ flex: 1 }}
     >
-      <View style={[styles.container, { paddingBottom: hp(padding) }]}>
-        <Alert
-          isVisible={messageVisible}
-          message={message}
-          onClose={closeMessageModal}
-          isSuccessful={isSuccessful}
-        />
-
-        <Text style={styles.title}>Шинээр бүртгүүлэх </Text>
-        <View style={{ height: hp("5%") }}></View>
+      <View style={[styles.container]}>
+        <Text style={styles.title}>Шинээр бүртгүүлэх</Text>
         <View
           style={{
-            height: hp("56%"),
-            justifyContent: "space-around",
+            marginTop: hp("2.5%"),
           }}
         >
-          {/* <ScrollView> */}
           <TextInput
             style={[
               styles.input,
-              focus == "lastName" && { borderColor: "#FFC700" },
-
-              error == "lastName" && { borderColor: "red" },
-            ]}
-            placeholder="Овог"
-            value={lastName}
-            onChangeText={(text) => {
-              setLastName(text);
-              if (error == "lastName") {
-                setError("");
-              }
-            }}
-            onFocus={(event) => handleFocus(event, "lastName")}
-            onBlur={handleBlur}
-            ref={lastNameRef}
-            onSubmitEditing={handleLastNameSubmit}
-          />
-          <TextInput
-            style={[
-              styles.input,
-              focus == "firstName" && { borderColor: "#FFC700" },
-
-              error == "firstName" && { borderColor: "red" },
+              focus == "firstName" && { borderColor: "#11AABE" },
+              errorText.hasOwnProperty("firstName") && { borderColor: "red" },
             ]}
             placeholder="Нэр"
             value={firstName}
             onChangeText={(text) => {
               setFirstName(text);
-              if (error == "firstName") {
-                setError("");
+              requirementSatisfied("firstName");
+            }}
+            onFocus={(event) => {
+              handleFocus(event, "firstName");
+              if (errorText.hasOwnProperty("firstName")) {
+                setTimeout(() => {
+                  setFirstName("");
+                }, 100);
               }
             }}
-            onFocus={(event) => handleFocus(event, "firstName")}
             onBlur={handleBlur}
             ref={firstNameRef}
             onSubmitEditing={handleFirstNameSubmit}
           />
+          <Text style={styles.errorMsg}>
+            {errorText.hasOwnProperty("firstName") && errorText.firstName}
+          </Text>
           <TextInput
             style={[
               styles.input,
-              focus == "phoneNumber" && { borderColor: "#FFC700" },
-              error == "phoneNumber" && { borderColor: "red" },
+              focus == "phoneNumber" && { borderColor: "#11AABE" },
+              errorText.hasOwnProperty("phoneNumber") && { borderColor: "red" },
             ]}
             placeholder="Утасны дугаар"
             value={phoneNumber}
             onChangeText={(text) => {
               setPhoneNumber(text);
-              if (error == "phoneNumber") {
-                setError("");
+              requirementSatisfied("phoneNumber");
+            }}
+            onFocus={(event) => {
+              handleFocus(event, "phoneNumber");
+              if (errorText.hasOwnProperty("phoneNumber")) {
+                setTimeout(() => {
+                  setPhoneNumber("");
+                }, 100);
               }
             }}
-            onFocus={(event) => handleFocus(event, "phoneNumber")}
             onBlur={handleBlur}
             ref={phoneNumberRef}
             onSubmitEditing={handlePhoneNumberSubmit}
           />
 
+          <Text style={styles.errorMsg}>
+            {errorText.hasOwnProperty("phoneNumber") && errorText.phoneNumber}
+          </Text>
           <TextInput
             style={[
               styles.input,
-              focus == "email" && { borderColor: "#FFC700" },
-              error == "email" && { borderColor: "red" },
+              focus == "email" && { borderColor: "#11AABE" },
+              errorText.hasOwnProperty("email") && { borderColor: "red" },
             ]}
             placeholder="Цахим хаяг"
             value={email}
-            onChangeText={setEmail}
-            onFocus={(event) => handleFocus(event, "email")}
+            onChangeText={(text) => {
+              setEmail(text);
+              requirementSatisfied("email");
+            }}
+            onFocus={(event) => {
+              handleFocus(event, "email");
+              if (errorText.hasOwnProperty("email")) {
+                setTimeout(() => {
+                  setEmail("");
+                }, 100);
+              }
+            }}
             onBlur={handleBlur}
             onSubmitEditing={handleEmailSubmit}
             ref={emailRef}
           />
+
+          <Text style={styles.errorMsg}>
+            {errorText.hasOwnProperty("email") && errorText.email}
+          </Text>
           <TextInput
             style={[
               styles.input,
-              focus == "password" && { borderColor: "#FFC700" },
+              focus == "password" && { borderColor: "#11AABE" },
+              errorText.hasOwnProperty("password") && { borderColor: "red" },
             ]}
             placeholder="Нууц үг"
             value={password}
-            onChangeText={setPassword}
-            onFocus={(event) => handleFocus(event, "password")}
+            onChangeText={(password) => {
+              setPassword(password);
+              requirementSatisfied("password");
+            }}
+            onFocus={(event) => {
+              handleFocus(event, "password");
+              if (errorText.hasOwnProperty("password")) {
+                setTimeout(() => {
+                  setPassword("");
+                }, 100);
+              }
+            }}
             ref={passwordRef}
             onSubmitEditing={handleSubmitButton}
             secureTextEntry
           />
-          {/* </ScrollView> */}
+          <Text style={styles.errorMsg}>
+            {errorText.hasOwnProperty("password") && errorText.password}
+          </Text>
         </View>
-        <View style={{ height: hp("7%") }}></View>
         <Button
           style={styles.button}
           title="Бүртгүүлэх"
@@ -267,10 +311,6 @@ const SignUpScreen = ({ navigation }) => {
         <Text style={styles.loginLink} onPress={handleLoginLinkPress}>
           Нэвтрэх
         </Text>
-        {/* <Button
-        title="Бүртгэлтэй хэрэглэгч бол Нэвтрэх."
-        onPress={handleLoginLinkPress}
-      /> */}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -280,34 +320,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
-
+    paddingTop: hp("6%"),
     backgroundColor: "#F9F9F9",
   },
-
   title: {
-    // top: "50%",
-    fontSize: hp("5%"),
+    fontSize: hp("3.5%"),
     fontWeight: "bold",
     color: "#0D0140",
   },
+  errorMsg: {
+    width: wp("84%"),
+    height: hp("4%"),
+    paddingLeft: wp("6%"),
+    color: "red",
+    fontSize: hp("1.6%"),
+  },
   input: {
-    fontSize: hp("2.5%"),
+    fontSize: hp("2%"),
     paddingLeft: wp("6%"),
     width: wp("84%"),
-    height: hp("10%"),
+    height: hp("7.5%"),
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#ffffff",
     borderRadius: 10,
   },
   button: {
-    marginTop: 20,
+    marginTop: hp("3%"),
     width: "80%",
   },
-
   loginLink: {
-    color: "#FFC700",
+    color: "#11AABE",
   },
 });
 

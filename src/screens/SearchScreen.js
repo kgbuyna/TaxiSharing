@@ -115,7 +115,6 @@ const SearchScreen = ({ navigation, route }) => {
               <Text
                 style={{
                   color: "#616161",
-                  opacity: "0.74%",
                   fontWeight: "500",
                   fontSize: hp("2%"),
                 }}
@@ -151,10 +150,7 @@ const SearchScreen = ({ navigation, route }) => {
         .then((response) => {
           const newSuggestions = response.data.predictions.map((el) => ({
             name: el.structured_formatting.main_text,
-            // You can include other properties if needed
-            // For example: title: "Some title",
           }));
-          console.log(newSuggestions);
           setSuggestions(newSuggestions);
         })
         .catch((error) => {
@@ -220,7 +216,7 @@ const SearchScreen = ({ navigation, route }) => {
         }}
         // style={{height: 80, width: '100%'}}
       />
-      
+
       {/* </View> */}
     </View>
   );
@@ -230,12 +226,12 @@ export default SearchScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
     // height: "100%",
     // padding:"5%",
   },
   input: {
-    flex: 1, 
+    flex: 1,
     marginLeft: 10, // Adjust as needed for spacing between icon and input
   },
   searchContainer: {
