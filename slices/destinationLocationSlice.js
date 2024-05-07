@@ -15,13 +15,12 @@ const destinationLocationSlice = createSlice({
   reducers: {
     updateLocation: (state, action) => {
       return {
-        ...state,
-        latitude: action.payload.latitude,
-        longitude: action.payload.longitude,
+      ...state,
+      name: action.payload.name,
       };
     },
-  },
-});
+    },
+  });
 
 export const { updateLocation } = destinationLocationSlice.actions;
 export const selectDestinationLocation = (state) => state.destinationLocation;

@@ -26,29 +26,6 @@ const StartScreen = ({ navigation }) => {
   const [openProfile, setOpenProfile] = useState(false);
   // console.log(currentLocation);
 
-  useEffect(() => {
-    function onConnect() {
-      setIsConnected(true);
-    }
-
-    function onDisconnect() {
-      setIsConnected(false);
-    }
-
-    function onFooEvent(value) {
-      setFooEvents((previous) => [...previous, value]);
-    }
-
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("foo", onFooEvent);
-
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("foo", onFooEvent);
-    };
-  }, []);
 
   return (
     <View style={styles.container}>
@@ -126,11 +103,6 @@ const StartScreen = ({ navigation }) => {
           />
         )}
       </View>
-      {/* <PostList
-        style={{ position: "absolute", zIndex: 1010, bottom: 0, left: 0 }}
-        // currentLocation={currentLocation}
-        // destinationLocation={destinationLocation}
-      /> */}
     </View>
   );
 };

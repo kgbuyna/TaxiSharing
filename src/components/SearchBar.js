@@ -26,7 +26,6 @@ function SearchBar({
   active = 1,
 }) {
   const navigation = useNavigation();
-  // console.log(placeholder === "Хүрэх газар")
   return (
     <View style={[styles.searchContainer, style]}>
       {placeholder === "Хүрэх газар" && (
@@ -43,7 +42,7 @@ function SearchBar({
             style={[styles.placeholder, placeholderStyle]}
             numberOfLines={1}
           >
-            {placeholder}
+            {placeholder} asd
           </Text>
         </TouchableOpacity>
       ) : (
@@ -52,7 +51,7 @@ function SearchBar({
             style={[styles.placeholder, placeholderStyle]}
             numberOfLines={1}
           >
-            {placeholder}
+            {placeholder} asd
           </Text>
         </View>
       )}
@@ -62,14 +61,12 @@ function SearchBar({
 
 const styles = StyleSheet.create({
   searchContainer: {
-    // alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FfFfFf",
     borderWidth: 1,
     borderColor: "#E8E8E8",
     borderRadius: 10,
-    // height: hp("8%"),
     paddingLeft: "2%",
   },
   placeholder: {
@@ -78,7 +75,6 @@ const styles = StyleSheet.create({
   },
   input: {
     justifyContent: "center",
-    // alignItems:"center",
     width: "90%",
     height: 48,
     fontSize: 16,

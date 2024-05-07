@@ -84,8 +84,9 @@ export default function MainScreen({ route, navigation }) {
   // }, []);
 
   useEffect(() => {
-    console.log(trip);
-    console.log(currentLocation);
+    console.log(destinationLocation?.name);
+    // console.log(trip);
+    // console.log(currentLocation);
     const socket = io("http://10.245.49.145:3000", {
       transports: ["websocket"],
     });
@@ -177,72 +178,72 @@ export default function MainScreen({ route, navigation }) {
     },
   ]);
 
-  useEffect(() => {
-    console.log(postsIndex);
-    console.log("PostSwitching");
-    if (postsIndex !== null) {
-      dispatch(
-        updateLocationCurrentLocation({
-          latitude: posts[postsIndex].userCurrentLocation.latitude,
-          longitude: posts[postsIndex].userCurrentLocation.longitude,
-        })
-      );
-      dispatch(
-        updateLocationDestLocation({
-          latitude: posts[postsIndex].destinationLocation.latitude,
-          longitude: posts[postsIndex].destinationLocation.longitude,
-        })
-      );
+  // useEffect(() => {
+  //   console.log(postsIndex);
+  //   console.log("PostSwitching");
+  //   if (postsIndex !== null) {
+  //     dispatch(
+  //       updateLocationCurrentLocation({
+  //         latitude: posts[postsIndex].userCurrentLocation.latitude,
+  //         longitude: posts[postsIndex].userCurrentLocation.longitude,
+  //       })
+  //     );
+  //     dispatch(
+  //       updateLocationDestLocation({
+  //         latitude: posts[postsIndex].destinationLocation.latitude,
+  //         longitude: posts[postsIndex].destinationLocation.longitude,
+  //       })
+  //     );
 
-      // setMateLocation((prevState) => ({
-      //   // !!!identifier авч хадгалж үлдэж байгаа тул ...prevState гэж бичив.
-      //   ...prevState,
-      //   ...posts[postsIndex].mateLocation,
-      // }));
+  //     // setMateLocation((prevState) => ({
+  //     //   // !!!identifier авч хадгалж үлдэж байгаа тул ...prevState гэж бичив.
+  //     //   ...prevState,
+  //     //   ...posts[postsIndex].mateLocation,
+  //     // }));
 
-      // setMateDestination((prevState) => ({
-      //   ...prevState,
-      //   ...posts[postsIndex].mateDestination,
-      // }));
+  //     // setMateDestination((prevState) => ({
+  //     //   ...prevState,
+  //     //   ...posts[postsIndex].mateDestination,
+  //     // }));
 
-      dispatch(
-        updateTrip({
-          mateLocation: posts[postsIndex].mateLocation,
-          mateDest: posts[postsIndex].mateDestination,
-          meetingLocation: posts[postsIndex].meetingLocation,
-          polylineCoordinates: posts[postsIndex].polylineCoordinates,
-        })
-      );
-      let d;
-      let dMin = 1000;
-      let dMinIndex = 0;
-      const taxiCoordinates = polyline
-        .decode(posts[postsIndex].polylineCoordinates)
-        .map((point, index) => {
-          d = getDistance(
-            point[0],
-            point[1],
-            trip.mateDestination.latitude,
-            trip.mateDestination.longitude
-          );
-          if (d < 0.1 && Math.min(d, dMin)) {
-            dMin = d;
-            dMinIndex = index;
-          }
-          return {
-            latitude: point[0],
-            longitude: point[1],
-          };
-        });
-      dispatch(
-        updateTrip({
-          soloTaxiCoordinates: taxiCoordinates.slice(dMinIndex - 1),
-          // soloTaxiLength: taxiCoordinates.slice(dMinIndex - 1).length,
-          groupTaxiCoordinates: taxiCoordinates.slice(0, dMinIndex),
-        })
-      );
-    }
-  }, [postsIndex]);
+  //     dispatch(
+  //       updateTrip({
+  //         mateLocation: posts[postsIndex].mateLocation,
+  //         mateDest: posts[postsIndex].mateDestination,
+  //         meetingLocation: posts[postsIndex].meetingLocation,
+  //         polylineCoordinates: posts[postsIndex].polylineCoordinates,
+  //       })
+  //     );
+  //     let d;
+  //     let dMin = 1000;
+  //     let dMinIndex = 0;
+  //     const taxiCoordinates = polyline
+  //       .decode(posts[postsIndex].polylineCoordinates)
+  //       .map((point, index) => {
+  //         d = getDistance(
+  //           point[0],
+  //           point[1],
+  //           trip.mateDestination.latitude,
+  //           trip.mateDestination.longitude
+  //         );
+  //         if (d < 0.1 && Math.min(d, dMin)) {
+  //           dMin = d;
+  //           dMinIndex = index;
+  //         }
+  //         return {
+  //           latitude: point[0],
+  //           longitude: point[1],
+  //         };
+  //       });
+  //     dispatch(
+  //       updateTrip({
+  //         soloTaxiCoordinates: taxiCoordinates.slice(dMinIndex - 1),
+  //         // soloTaxiLength: taxiCoordinates.slice(dMinIndex - 1).length,
+  //         groupTaxiCoordinates: taxiCoordinates.slice(0, dMinIndex),
+  //       })
+  //     );
+  //   }
+  // }, [postsIndex]);
 
   useEffect(() => {
     const markerNames = ["mateLoc", "mateDestLoc", "current", "dest"];
@@ -254,7 +255,6 @@ export default function MainScreen({ route, navigation }) {
         left: wp("2%"),
       },
     });
-    // if (soloTaxiCoordinates) console.log(soloTaxiCoordinates.length);
   }, [soloTaxiCoordinates]);
 
   useEffect(() => {

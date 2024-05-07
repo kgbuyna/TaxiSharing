@@ -44,38 +44,21 @@ const SearchScreen = ({ navigation, route }) => {
   ]);
   const [searchText, setSearchText] = useState("");
   const [focus, setFocus] = useState(false);
-  // useEffect(() => {
-  //   console.log(route);
-  //   console.log(apiKey);
-  //   // handleInputChange(searchText);
-  // }, [searchText]);
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       onPress={() => {
-        axios
-          .get(
-            `https://maps.googleapis.com/maps/api/geocode/json?address=${item.name}&key=${apiKey}`
-          )
-          .then((response) => {
-            const data = response.data;
-            if (data.status === "OK") {
-              // const { lat, lng } = data.results[0].geometry.location;
-              dispatch(
-                updateLocation({
-                  latitude: data.results[0].geometry.location.lat,
-                  longitude: data.results[0].geometry.location.lng,
-                  identifier: "dest",
-                  name: item.name,
-                })
-              );
-              console.log(data.results[0].geometry.location);
-              navigation.navigate("Main");
-            } else {
-              console.error(`Geocoding failed: ${data.status}`);
-            }
+        console.log(item.name);
+        // const { lat, lng } = data.results[0].geometry.location;
+        dispatch(
+          updateLocation({
+            latitude: item.coordinate.coordinates[1],
+            longitude: item.coordinate.coordinates[0],
+            identifier: "dests",
+            name: item.name,
           })
-          //
-          .catch((error) => console.error(`Geocoding error: ${error}`));
+        );
+        navigation.navigate("Main");
       }}
       style={{
         paddingLeft: 20,
@@ -87,7 +70,6 @@ const SearchScreen = ({ navigation, route }) => {
         alignItems: "center",
       }}
     >
-      {/* <Location width={wp("8%")} height={wp("8%")} /> */}
       <View style={{ width: wp("8%"), height: hp("10%") }}>
         <Location height="100%" width="100%"></Location>
       </View>
@@ -126,7 +108,7 @@ const SearchScreen = ({ navigation, route }) => {
             <Text
               style={{
                 color: "#616161",
-                opacity: "0.74%",
+                opacity: 0.74,
                 fontWeight: "500",
                 fontSize: hp("2.5%"),
               }}
@@ -142,23 +124,20 @@ const SearchScreen = ({ navigation, route }) => {
     </TouchableOpacity>
   );
   function handleInputChange(value) {
-    if (value.length >= 4) {
-      axios
-        .get(
-          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=МУИС&components=country:mn&types=establishment&location=37.76999%2C-122.44696&key=${apiKey}`
-        )
-        .then((response) => {
-          const newSuggestions = response.data.predictions.map((el) => ({
-            name: el.structured_formatting.main_text,
-          }));
-          setSuggestions(newSuggestions);
-        })
-        .catch((error) => {
-          console.log(error.message);
-          console.error(error);
-        });
-    }
     setSearchText(value);
+    // http://localhost:3000/api/v1/place?text=
+    axios
+      .get(`http://10.0.2.2:3000/api/v1/place/`, {
+        params: {
+          text: value,
+        },
+      })
+      .then((res) => {
+        setSuggestions(res.data.places);
+      })
+      .catch((err) => {
+        console.error(err.message);
+      });
   }
   // const [newLocations, setNewLocations] = useState(route.params.locations);
   return (
@@ -180,14 +159,12 @@ const SearchScreen = ({ navigation, route }) => {
         <View style={{ width: "10%", height: "100%" }}>
           <SearchIcon height="100%" width="100%" />
         </View>
-        {/* <AntDesign name="search1" size={28} color="#FFC700" /> */}
         <TextInput
           style={styles.input}
           fontSize={18}
-          placeholder="Search..."
+          placeholder="Хайлт"
           value={searchText}
           onFocus={() => {
-            // setFocus false
             setFocus(true);
             console.log("focused");
           }}
@@ -196,16 +173,6 @@ const SearchScreen = ({ navigation, route }) => {
           }}
           onChangeText={handleInputChange}
         />
-        {/* <TouchableOpacity
-          style={{
-            width: wp("15%"),
-            height: hp("5%"),
-          }}
-          // Үүн дээ дарахад flatlist алга болж mapView гарч ирэх.
-          onPress={() => {}}
-        >
-          <SetLocation height="100%" width="100%" />
-        </TouchableOpacity> */}
       </View>
       <FlatList
         data={suggestions}
