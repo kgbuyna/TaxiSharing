@@ -23,7 +23,7 @@ const App = () => {
     <Provider store={store}>
       <NavigationContainer>
         {/* 99243596 123456789 */}
-        <Stack.Navigator initialRouteName="Splash">
+        <Stack.Navigator initialRouteName="Login">
           <Stack.Screen
             name="Splash"
             component={SplashScreen}

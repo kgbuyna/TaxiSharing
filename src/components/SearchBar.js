@@ -42,7 +42,7 @@ function SearchBar({
             style={[styles.placeholder, placeholderStyle]}
             numberOfLines={1}
           >
-            {placeholder} asd
+            {placeholder} 
           </Text>
         </TouchableOpacity>
       ) : (
@@ -51,7 +51,7 @@ function SearchBar({
             style={[styles.placeholder, placeholderStyle]}
             numberOfLines={1}
           >
-            {placeholder} asd
+            {placeholder}
           </Text>
         </View>
       )}

@@ -10,7 +10,7 @@ import {
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from "react-native-maps";
 
-import Clock from "../components/Clock";
+// import Clock from "../components/Clock";
 import axios from "axios";
 import polyline from "@mapbox/polyline";
 import { computeRoutes } from "../api/requests";
@@ -59,7 +59,7 @@ export default function PostScreen({ navigation, route }) {
         </TouchableOpacity>
       </HeaderBar> */}
 
-      <Clock hour={hour} min={min} setHour={setHour} setMin={setMin} />
+      {/* <Clock hour={hour} min={min} setHour={setHour} setMin={setMin} /> */}
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}

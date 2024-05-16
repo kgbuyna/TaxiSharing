@@ -8,7 +8,9 @@ import {
   Text,
 } from "react-native";
 import colors, { primaryColor, secondaryColor } from "../../theme.js";
-import io from "socket.io-client";
+// import io from "socket.io-client";
+import { io } from 'socket.io-client';
+
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -23,16 +25,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectDestinationLocation } from "../../slices/destinationLocationSlice";
 import { selectCurrentLocation } from "../../slices/currentLocationSlice";
 import { selectTrip } from "../../slices/tripSlice";
+import { selectUser } from "../../slices/userSlice.js";
 import { updateTrip } from "../../slices/tripSlice";
 import { updateLocation as updateLocationCurrentLocation } from "../../slices/currentLocationSlice";
 import { updateLocation as updateLocationDestLocation } from "../../slices/destinationLocationSlice";
 import axios from "axios";
+import { socket } from "../socket.js";
+import * as Network from 'expo-network';
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
 export default function MainScreen({ route, navigation }) {
   const dispatch = useDispatch();
+
+  const user = useSelector(selectUser);
   const destinationLocation = useSelector(selectDestinationLocation);
   const currentLocation = useSelector(selectCurrentLocation);
   const trip = useSelector(selectTrip);
@@ -60,53 +67,36 @@ export default function MainScreen({ route, navigation }) {
     setPostsIndex(index);
   };
 
-  // useEffect(    console.log("hmm");
-  //   const socket = io("http://10.245.49.145:3000", {
-  //     transports: ["websocket"],
-  //   });
-  //   // console.log(socket);
-  //   await axios
-  //     .get("http://localhost:3000")
-  //     .then((response) => {
-  //       // Handle success
-  //       console.log("Response:", response);
-  //     })
-  //     .catch((error) => {
-  //       // Handle error
-  //       console.log(error)
-  //       console.error("Error:", error);
-  //     });
-
-  //   return function didUnmount() {
-  //     socket.disconnect();
-  //     socket.removeAllListeners();
-  //   };
-  // }, []);
-
   useEffect(() => {
-    console.log(destinationLocation?.name);
-    // console.log(trip);
-    // console.log(currentLocation);
-    const socket = io("http://10.245.49.145:3000", {
+    const socket = io("http://10.0.2.2:3000", {
       transports: ["websocket"],
     });
-    // Socket io -гоо ашиглаад messenger ээ эхлээд хийх хэрэгтэй.
-    // What should I do now? I have a socket connection
+    socket.on("connect", () => {
+      console.log("connected");
+      socket.emit("new user", {
+        'currentLocation': {
+          'lat': currentLocation.latitude,
+          'lng': currentLocation.longitude
+        },
+        'destinationLocation': {
+          'lat': destinationLocation.latitude,
+          'lng': destinationLocation.longitude
+        },
+        'name': user.firstName,
+        'id': user.id,
+      });
+    });
+    socket.on("active users", (users) => {
+      let temp = [];
+      Object.keys(users).forEach((key) => {
+        temp.push(users[key]);
+      });
+      // setActiveUsers(
+      //   temp.filter((activeUser) => activeUser.name !== user.name)
+      // );
+    });
   }, []);
-  function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Radius of the Earth in kilometers
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance in kilometers
-    return distance;
-  }
+
   const mapRef = useRef(null);
   const [count, setCount] = useState(0);
 
@@ -177,73 +167,75 @@ export default function MainScreen({ route, navigation }) {
         "}tncH_tekSEcBBa@FMy@mIaA}Ic@kFMiHIeIo@}p@KyHc@YEgHEaQRAy@wr@Ci@_@kCaAcEkBaJcAcF_@R}AlAUgBe@uB",
     },
   ]);
+  /*
+  
+  useEffect(() => {
+    console.log(postsIndex);
+    console.log("PostSwitching");
+    if (postsIndex !== null) {
+      dispatch(
+        updateLocationCurrentLocation({
+          latitude: posts[postsIndex].userCurrentLocation.latitude,
+          longitude: posts[postsIndex].userCurrentLocation.longitude,
+        })
+      );
+      dispatch(
+        updateLocationDestLocation({
+          latitude: posts[postsIndex].destinationLocation.latitude,
+          longitude: posts[postsIndex].destinationLocation.longitude,
+        })
+      );
 
-  // useEffect(() => {
-  //   console.log(postsIndex);
-  //   console.log("PostSwitching");
-  //   if (postsIndex !== null) {
-  //     dispatch(
-  //       updateLocationCurrentLocation({
-  //         latitude: posts[postsIndex].userCurrentLocation.latitude,
-  //         longitude: posts[postsIndex].userCurrentLocation.longitude,
-  //       })
-  //     );
-  //     dispatch(
-  //       updateLocationDestLocation({
-  //         latitude: posts[postsIndex].destinationLocation.latitude,
-  //         longitude: posts[postsIndex].destinationLocation.longitude,
-  //       })
-  //     );
+      // setMateLocation((prevState) => ({
+      //   // !!!identifier авч хадгалж үлдэж байгаа тул ...prevState гэж бичив.
+      //   ...prevState,
+      //   ...posts[postsIndex].mateLocation,
+      // }));
 
-  //     // setMateLocation((prevState) => ({
-  //     //   // !!!identifier авч хадгалж үлдэж байгаа тул ...prevState гэж бичив.
-  //     //   ...prevState,
-  //     //   ...posts[postsIndex].mateLocation,
-  //     // }));
+      // setMateDestination((prevState) => ({
+      //   ...prevState,
+      //   ...posts[postsIndex].mateDestination,
+      // }));
 
-  //     // setMateDestination((prevState) => ({
-  //     //   ...prevState,
-  //     //   ...posts[postsIndex].mateDestination,
-  //     // }));
-
-  //     dispatch(
-  //       updateTrip({
-  //         mateLocation: posts[postsIndex].mateLocation,
-  //         mateDest: posts[postsIndex].mateDestination,
-  //         meetingLocation: posts[postsIndex].meetingLocation,
-  //         polylineCoordinates: posts[postsIndex].polylineCoordinates,
-  //       })
-  //     );
-  //     let d;
-  //     let dMin = 1000;
-  //     let dMinIndex = 0;
-  //     const taxiCoordinates = polyline
-  //       .decode(posts[postsIndex].polylineCoordinates)
-  //       .map((point, index) => {
-  //         d = getDistance(
-  //           point[0],
-  //           point[1],
-  //           trip.mateDestination.latitude,
-  //           trip.mateDestination.longitude
-  //         );
-  //         if (d < 0.1 && Math.min(d, dMin)) {
-  //           dMin = d;
-  //           dMinIndex = index;
-  //         }
-  //         return {
-  //           latitude: point[0],
-  //           longitude: point[1],
-  //         };
-  //       });
-  //     dispatch(
-  //       updateTrip({
-  //         soloTaxiCoordinates: taxiCoordinates.slice(dMinIndex - 1),
-  //         // soloTaxiLength: taxiCoordinates.slice(dMinIndex - 1).length,
-  //         groupTaxiCoordinates: taxiCoordinates.slice(0, dMinIndex),
-  //       })
-  //     );
-  //   }
-  // }, [postsIndex]);
+      dispatch(
+        updateTrip({
+          mateLocation: posts[postsIndex].mateLocation,
+          mateDest: posts[postsIndex].mateDestination,
+          meetingLocation: posts[postsIndex].meetingLocation,
+          polylineCoordinates: posts[postsIndex].polylineCoordinates,
+        })
+      );
+      let d;
+      let dMin = 1000;
+      let dMinIndex = 0;
+      const taxiCoordinates = polyline
+        .decode(posts[postsIndex].polylineCoordinates)
+        .map((point, index) => {
+          d = getDistance(
+            point[0],
+            point[1],
+            trip.mateDestination.latitude,
+            trip.mateDestination.longitude
+          );
+          if (d < 0.1 && Math.min(d, dMin)) {
+            dMin = d;
+            dMinIndex = index;
+          }
+          return {
+            latitude: point[0],
+            longitude: point[1],
+          };
+        });
+      dispatch(
+        updateTrip({
+          soloTaxiCoordinates: taxiCoordinates.slice(dMinIndex - 1),
+          // soloTaxiLength: taxiCoordinates.slice(dMinIndex - 1).length,
+          groupTaxiCoordinates: taxiCoordinates.slice(0, dMinIndex),
+        })
+      );
+    }
+  }, [postsIndex]);
+  */
 
   useEffect(() => {
     const markerNames = ["mateLoc", "mateDestLoc", "current", "dest"];
@@ -261,8 +253,7 @@ export default function MainScreen({ route, navigation }) {
     setCount(count + 1);
   }, [route.params]);
 
-  // Function to calculate distance between two points using Haversine formula
-  const onMapReady = () => {};
+  const onMapReady = () => { };
   return (
     <View style={styles.container}>
       <StatusBar hidden />
@@ -328,7 +319,7 @@ export default function MainScreen({ route, navigation }) {
             tracksViewChanges={false}
             coordinate={
               trip.soloTaxiCoordinates[
-                Math.ceil(trip.soloTaxiCoordinates.length / 2)
+              Math.ceil(trip.soloTaxiCoordinates.length / 2)
               ]
             }
           >
@@ -370,7 +361,7 @@ export default function MainScreen({ route, navigation }) {
             tracksViewChanges={false}
             coordinate={
               trip.groupTaxiCoordinates[
-                Math.ceil(trip.groupTaxiCoordinates.length / 2)
+              Math.ceil(trip.groupTaxiCoordinates.length / 2)
               ]
             }
           >
@@ -429,9 +420,6 @@ export default function MainScreen({ route, navigation }) {
           screen={"Home"}
         />
       </View>
-      {/* <View style={{ flexDirection: "row", alignItems: "center" }}></View>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-        </View> */}
 
       <View
         style={{
@@ -497,10 +485,6 @@ const styles = StyleSheet.create({
     left: 0,
     alignItems: "center",
     justifyContent: "center",
-    // borderTop: 25,
-    // borderRadius: ,
-    // borderTopRightRadius: "45%",
-    // borderTopLeftRadius: "45%",
     backgroundColor: "#FFFFFF",
   },
   textContainer: {
@@ -512,14 +496,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginHorizontal: wp("1%"),
     alignItems: "center",
-    // alignContent: "center",
     borderColor: "#E8E8E8",
   },
-
-  // searchBar: {
-  //   width: screenWidth * 0.82,
-  //   height: screenHeight * 0.08,
-  // },
   map: {
     width: "100%",
     height: "66%",
@@ -530,11 +508,9 @@ const styles = StyleSheet.create({
     width: screenWidth * 0.36,
     height: screenHeight * 0.2,
     borderColor: "#fce9b5",
-    // borderWidth: 1,
   },
   text: {
     fontSize: hp("2.5%"),
     color: primaryColor,
   },
 });
-// 427

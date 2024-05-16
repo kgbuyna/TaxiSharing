@@ -103,10 +103,6 @@ const LoginScreen = ({ navigation }) => {
           // 123456789
           if (response.data.success) {
             console.log("Login Successful. Please Login to proceed");
-            console.log(response.data.user);
-            // setUserPhoneNumber(response.data.user.phone_number);
-            // setFirstName(response.data.user.name);
-
             dispatch(setUserId(response.data.user.id));
             dispatch(setUserPhoneNumber(response.data.user.phone_number));
             dispatch(setFirstName(response.data.user.name));
@@ -178,7 +174,7 @@ const LoginScreen = ({ navigation }) => {
           }}
           onBlur={handleBlur}
           onSubmitEditing={handlePhoneNumberSubmit}
-          // key={1}
+        // key={1}
         />
 
         <Text style={styles.errorMsg}>

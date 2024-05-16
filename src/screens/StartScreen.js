@@ -8,24 +8,16 @@ import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import SearchBar from "../components/SearchBar";
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import ChatButton from "../components/ChatButton";
 
-import Icon1 from "../../assets/chatIcon(1).svg";
 import ChatIcon from "../../assets/chatIcon.svg";
 import ProfileIcon from "../../assets/profile.svg";
-import ChatIcon1 from "../../assets/chatIcon(1).svg";
 import { useSelector } from "react-redux";
 import { selectCurrentLocation } from "../../slices/currentLocationSlice";
-import ProfileButton from "../components/ProfileButton";
-import PostList from "../components/PostList";
 
-import { socket } from "../../socket";
 const StartScreen = ({ navigation }) => {
   
   const currentLocation = useSelector(selectCurrentLocation);
   const [openProfile, setOpenProfile] = useState(false);
-  // console.log(currentLocation);
-
 
   return (
     <View style={styles.container}>

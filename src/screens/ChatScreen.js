@@ -53,8 +53,6 @@ import {
 import axios from "axios";
 
 const ChatScreen = ({ route, navigation }) => {
-  // const [messages, setMessages] = useState([]);
-  // const []
   const [msgRefs, setMsgRefs] = useState([]);
   const messages = useSelector(selectMessages);
   const user = useSelector(selectUser);
@@ -62,7 +60,8 @@ const ChatScreen = ({ route, navigation }) => {
   const conversationId = route.params.conversationId;
   const receiverId = route.params.receiverId;
   useEffect(() => {
-    // Order хийх хэрэгтэй байж болох юм.
+    console.log('receiverId');
+    console.log(receiverId);
     if (!msgRefs.length) {
       console.log(route.params);
       console.log(`usingEffect`);
@@ -74,37 +73,37 @@ const ChatScreen = ({ route, navigation }) => {
         }
       });
     }
-    if (!messages.length) {
-      axios
-        .get("http://10.0.2.2:3000/api/v1/chat/", {
-          params: {
-            conversationId: conversationId,
-          },
-        })
-        .then((response) => {
-          if (response.data.success) {
-            console.log(response.data.messages);
-            response.data.messages.forEach((message) => {
-              message.text = message.Msgref.text;
-              // this is must. otherwise , it throws an error undefined key.
-              message._id = message.id;
-              message.user = {
-                _id: message.sender_id,
-              };
-            });
+    // if (!messages.length) {
+    //   axios
+    //     .get("http://10.0.2.2:3000/api/v1/chat/", {
+    //       params: {
+    //         conversationId: conversationId,
+    //       },
+    //     })
+    //     .then((response) => {
+    //       if (response.data.success) {
+    //         console.log(response.data.messages);
+    //         response.data.messages.forEach((message) => {
+    //           message.text = message.Msgref.text;
+    //           // this is must. otherwise , it throws an error undefined key.
+    //           message._id = message.id;
+    //           message.user = {
+    //             _id: message.sender_id,
+    //           };
+    //         });
 
-            // setMessages(response.data.messages);
-            updateMessage(response.data.messages);
-            // conversation.updatedAt өдрөө тодорхойлно.
-            // setConversations(response.data.conversations);
-          } else {
-            console.log("error on getting conversation");
-            console.log(response.data);
-          }
-        });
-    }
+    //         // setMessages(response.data.messages);
+    //         updateMessage(response.data.messages);
+    //         // conversation.updatedAt өдрөө тодорхойлно.
+    //         // setConversations(response.data.conversations);
+    //       } else {
+    //         console.log("error on getting conversation");
+    //         console.log(response.data);
+    //       }
+    //     });
+    // }
 
-    console.log(`converation id ${conversationId}`);
+    // console.log(`converation id ${conversationId}`);
     /*
       setMessages([
         {
@@ -128,7 +127,7 @@ const ChatScreen = ({ route, navigation }) => {
         },
       ]);
        */
-  }, [msgRefs]);
+  }, []);
 
   const onSend = useCallback((message = []) => {
     message.user = {};

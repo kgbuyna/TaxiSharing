@@ -16,8 +16,12 @@ const currentLocationSlice = createSlice({
     updateLocation: (state, action) => {
       return {
         ...state,
-        latitude: action.payload.latitude,
-        longitude: action.payload.longitude,
+        latitude: action.payload.latitude || state.latitude,
+        longitude: action.payload.longitude || state.longitude,
+        identifier: action.payload.identifier || state.identifier,
+        latitudeDelta: action.payload.latitudeDelta || state.latitudeDelta,
+        longitudeDelta: action.payload.longitudeDelta || state.longitudeDelta,
+        name: action.payload.name || state.name,
       };
     },
   },

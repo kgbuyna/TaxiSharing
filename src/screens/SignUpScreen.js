@@ -20,13 +20,17 @@ import {
 
 import {
   setPhoneNumber as setUserPhoneNumber,
-  setFirstName,
+  setFirstName as setName,
   setUserId,
 } from "../../slices/userSlice";
+import { errorColor } from "../../theme";
+import { useDispatch } from "react-redux";
 
 var validator = require("validator");
 
 const SignUpScreen = ({ navigation }) => {
+
+  const dispatch = useDispatch();
   const [focus, setFocus] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -128,12 +132,12 @@ const SignUpScreen = ({ navigation }) => {
     } else {
       requirementSatisfied("password");
     }
-    // 992
+
     if (Object.keys(errorText).length === 0) {
       console.log("ready to sent");
       axios
-        .post("https://10.0.2.2:3000/api/v1/signup", {
-          phone: phoneNumber,
+        .post("http://10.0.2.2:3000/api/v1/signup", {
+          phoneNumber: phoneNumber,
           password: password,
           email: email,
           name: firstName,
@@ -141,16 +145,21 @@ const SignUpScreen = ({ navigation }) => {
         .then((response) => {
           console.log(response.data);
           if (response.data.success) {
-            setUserId(response.data.user.id);
-            setUserPhoneNumber(response.data.user.phone_number);
-            setFirstName(response.data.user.name);
+            //           setPhoneNumber as setUserPhoneNumber,
+            // setFirstName,
+            // setUserId,
+            dispatch(setUserId(response.data.user.id));
+            dispatch(setUserPhoneNumber(phoneNumber));
+            dispatch(setName(firstName));
             timeout = setTimeout(() => {
-              navigationService.navigate("Splash");
+              navigation.navigate("Splash");
             }, 500);
           }
         })
         .catch((error) => {
+          console.log(Object.keys(error));
           console.log(error);
+          console.log(error.name);
         });
     }
   };

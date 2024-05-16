@@ -3,18 +3,23 @@ const userSlice = createSlice({
   name: "user",
 
   initialState: {
-    phoneNumber: "99243596",
+    phoneNumber: "",
     firstName: "",
-    id: 2,
+    id: "",
   },
   reducers: {
     setPhoneNumber(state, action) {
+      console.log(action.payload);
       state.phoneNumber = action.payload;
     },
     setFirstName(state, action) {
+
+      console.log(action.payload);
       state.firstName = action.payload;
     },
     setUserId(state, action) {
+
+      console.log(action.payload);
       state.id = action.payload;
     },
   },

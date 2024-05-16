@@ -8,7 +8,7 @@ import Constants from "expo-constants";
 import axios from "axios";
 export default function SplashScreen() {
 
-  const dispatch = useDispatch(); 
+  const dispatch = useDispatch();
 
   const apiKey = Constants.expoConfig.extra.API_KEY;
   // const [location, setLocation] = useState({latitude: ,longitude: });
@@ -45,34 +45,17 @@ export default function SplashScreen() {
         )
         .then((response) => {
           console.log(response.data.results);
-        //   const politicalComponent =
-        //     response.data?.results[0].address_components.find((component) =>
-        //       component.types.includes("political")
-        //     );
-
-        //   if (politicalComponent) {
-        //     current.name = politicalComponent.short_name;
-        //     dispatch(updateLocation(current));
-        //     console.log(current);
-        //   } else {
-        //     console.error(
-        //       "No political component found in the address components"
-        //       );
-        //     }
-        //     console.log(current);
-        dispatch(updateLocation(current));
-            navigation.navigate("Start");
+          dispatch(updateLocation(current));
+          navigation.navigate("Start");
         })
         .catch((error) =>
           console.error("Error fetching geocoding data:", error)
         );
-      // axios.get()
-      // https://maps.googleapis.com/maps/api/geocode/json?latlng=LATITUDE,LONGITUDE&key=YOUR_API_KEY
     }
 
     getLocationAsync()
-      .then(() => {})
-      .catch((err) => {});
+      .then(() => { })
+      .catch((err) => { });
   }, []);
 
   return (
