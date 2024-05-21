@@ -51,10 +51,14 @@ import {
   updateMessage,
 } from "../../slices/messageSlice";
 import axios from "axios";
+import Constants from "expo-constants";
 
+const URL = Constants.expoConfig.extra.URL;
 const ChatScreen = ({ route, navigation }) => {
   const [msgRefs, setMsgRefs] = useState([]);
-  const messages = useSelector(selectMessages);
+  // const messages = useSelector(selectMessages);
+  // const messages = [];
+  const [messages, setMessages] = useState([]);
   const user = useSelector(selectUser);
 
   const conversationId = route.params.conversationId;
@@ -65,7 +69,9 @@ const ChatScreen = ({ route, navigation }) => {
     if (!msgRefs.length) {
       console.log(route.params);
       console.log(`usingEffect`);
-      axios.get("http://10.0.2.2:3000/api/v1/chat/msgRefs").then((response) => {
+      axios.get(`http://${URL}/api/v1/chat/msgRefs`).then((response) => {
+        console.log('response');
+        console.log(response.data);
         if (response.data.success) {
           setMsgRefs(response.data.messages);
         } else {
@@ -133,15 +139,20 @@ const ChatScreen = ({ route, navigation }) => {
     message.user = {};
     message._id = new Date();
     message.user.id = user.id;
+    console.log(message);
     updateMessage((previousMessages) =>
       GiftedChat.append(previousMessages, message)
     );
-    axios.post("http://10.0.2.2:3000/api/v1/chat/", {
-      conversationId: conversationId,
-      senderId: user.id,
-      receiverId: receiverId,
-      messageId: message.id,
-    });
+    setMessages((previousMessages) =>
+      GiftedChat.append(previousMessages, message)
+    );
+
+    // axios.post("http://10.0.2.2:3000/api/v1/chat/", {
+    //   conversationId: conversationId,
+    //   senderId: user.id,
+    //   receiverId: receiverId,
+    //   messageId: message.id,
+    // });
   }, []);
 
   return (

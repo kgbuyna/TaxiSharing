@@ -1,4 +1,4 @@
-// NODE_ENV=development npx expo start --tunnel
+//  NODE_ENV=development npx expo start --tunnel
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import SplashScreen from "./src/screens/SplashScreen";
@@ -8,7 +8,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "./src/screens/LoginScreen";
 import SignUpScreen from "./src/screens/SignUpScreen";
 import PostScreen from "./src/screens/PostScreen";
-import StartScreen from "./src/screens/StartScreen";
+import StartScreen from "./src/screens/StartScreen"; 
 import { Provider } from "react-redux";
 import store from "./store";
 import MessengerScreen from "./src/screens/MessengerScreen";

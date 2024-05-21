@@ -62,10 +62,10 @@ export const renderTime = (props) => {
   );
 };
 export const renderBubble = (props) => {
-  const { currentMessage } = props;
-  if (currentMessage.map) {
-    return <ChatMap />;
-  }
+  // const { currentMessage } = props;
+  // if (currentMessage.map) {
+  //   return <ChatMap />;
+  // }
   return (
     <Bubble
       {...props}
