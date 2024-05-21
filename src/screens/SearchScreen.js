@@ -25,10 +25,10 @@ import Constants from "expo-constants";
 import { updateLocation } from "../../slices/destinationLocationSlice";
 
 import { useDispatch } from "react-redux";
-const screenWidth = Dimensions.get("window").width;
-const screenHeight = Dimensions.get("window").height;
 
 const apiKey = Constants.expoConfig.extra.API_KEY;
+
+const URL = Constants.expoConfig.extra.URL;
 
 const SearchScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
@@ -48,14 +48,14 @@ const SearchScreen = ({ navigation, route }) => {
   const renderItem = ({ item }) => (
     <TouchableOpacity
       onPress={() => {
-        console.log(item.name);
-        // const { lat, lng } = data.results[0].geometry.location;
+        
         dispatch(
           updateLocation({
             latitude: item.coordinate.coordinates[1],
             longitude: item.coordinate.coordinates[0],
             identifier: "dests",
             name: item.name,
+            place_id: item.id,
           })
         );
         navigation.navigate("Main");
@@ -127,7 +127,7 @@ const SearchScreen = ({ navigation, route }) => {
     setSearchText(value);
     // http://localhost:3000/api/v1/place?text=
     axios
-      .get(`http://10.0.2.2:3000/api/v1/place/`, {
+      .get(`http://${URL}/api/v1/place/`, {
         params: {
           text: value,
         },
@@ -181,7 +181,7 @@ const SearchScreen = ({ navigation, route }) => {
         style={{
           marginHorizontal: wp("5%"),
         }}
-        // style={{height: 80, width: '100%'}}
+      // style={{height: 80, width: '100%'}}
       />
 
       {/* </View> */}

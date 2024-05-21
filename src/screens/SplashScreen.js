@@ -11,6 +11,12 @@ export default function SplashScreen() {
   const dispatch = useDispatch();
 
   const apiKey = Constants.expoConfig.extra.API_KEY;
+  const URL = Constants.expoConfig.extra.URL;
+  // const apiKey = Constants.expoConfig.extra.API_KEY;
+  console.log('apiKey');
+  console.log(apiKey);
+  console.log('URL');
+  console.log(URL);
   // const [location, setLocation] = useState({latitude: ,longitude: });
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -23,34 +29,34 @@ export default function SplashScreen() {
         setErrorMsg("Permission to access location was denied");
         return;
       }
-      // let location = await Location.getCurrentPositionAsync().then((res) => {
-      //   const { latitude, longitude } = res.coords;
-      //   console.log(res.coords)
-      //   const current = {
-      //     latitude: latitude,
-      //     longitude: longitude,
-      //     identifier: "origin",
-      //   };
-      // });
-      const current = {
-        latitude: 47.920764148238305,
-        longitude: 106.90519639660427,
-        identifier: "origin",
-      };
-
-
-      axios
-        .get(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${current.latitude},${current.longitude}&key=${apiKey}`
-        )
-        .then((response) => {
-          console.log(response.data.results);
-          dispatch(updateLocation(current));
-          navigation.navigate("Start");
-        })
-        .catch((error) =>
-          console.error("Error fetching geocoding data:", error)
+      let location = await Location.getCurrentPositionAsync().then((res) => {
+        const { latitude, longitude } = res.coords;
+        console.log('object');
+        console.log(res.coords)
+        dispatch(
+          updateLocation({
+            latitude: latitude,
+            longitude: longitude,
+          })
         );
+        console.log('i do not know');
+        console.log('HEHEH');
+        axios.get(`http://${URL}/api/v1/place/name`, {
+          params: {
+            coordinate: `${latitude}, ${longitude}`,
+          }
+        }).then((response) => {
+          console.log(response.data);
+          dispatch(updateLocation({ name: response.data.places[0].name, places: response.data.places, place_id: response.data.places[0].id}));
+          navigation.navigate("Start");
+        }
+        ).catch((error) => {
+          console.error("Error fetching geocoding data:", error);
+        }
+        );
+      });
+
+
     }
 
     getLocationAsync()

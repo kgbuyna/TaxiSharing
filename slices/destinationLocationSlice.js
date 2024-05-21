@@ -8,19 +8,22 @@ const destinationLocationSlice = createSlice({
     latitude: 47.91101355221306,
     longitude: 106.81344838673327,
     identifier: "dest",
+    place_id: null,
     name: "",
-    // latitudeDelta: 0.01,
-    // longitudeDelta: 0.01,
   },
   reducers: {
     updateLocation: (state, action) => {
       return {
-      ...state,
-      name: action.payload.name,
+        ...state,
+        latitude: action.payload.latitude || state.latitude,
+        longitude: action.payload.longitude || state.longitude,
+        identifier: action.payload.identifier || state.identifier,
+        place_id: action.payload.place_id || state.place_id,
+        name: action.payload.name || state.name,
       };
     },
-    },
-  });
+  },
+});
 
 export const { updateLocation } = destinationLocationSlice.actions;
 export const selectDestinationLocation = (state) => state.destinationLocation;

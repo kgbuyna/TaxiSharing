@@ -17,6 +17,8 @@ import { selectCurrentLocation } from "../../slices/currentLocationSlice";
 const StartScreen = ({ navigation }) => {
   
   const currentLocation = useSelector(selectCurrentLocation);
+  console.log('currentLocation');
+  console.log(currentLocation);
   const [openProfile, setOpenProfile] = useState(false);
 
   return (
@@ -51,8 +53,6 @@ const StartScreen = ({ navigation }) => {
               padding: wp("1%"),
             },
           ]}
-          // 99243596
-          // 123456789
           onPress={() =>
             navigation.navigate("ChatList", { fromWhere: "Start" })
           }
@@ -62,7 +62,7 @@ const StartScreen = ({ navigation }) => {
       </View>
       <MapView
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
+        // provider={PROVIDER_GOOGLE}
         region={currentLocation}
       >
         <Marker

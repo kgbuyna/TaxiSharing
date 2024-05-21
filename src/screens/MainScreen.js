@@ -8,19 +8,26 @@ import {
   Text,
 } from "react-native";
 import colors, { primaryColor, secondaryColor } from "../../theme.js";
-// import io from "socket.io-client";
-import { io } from 'socket.io-client';
 
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+
 import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from "react-native-maps";
-import SearchBar from "../components/SearchBar";
 import polyline from "@mapbox/polyline";
+
+import axios from "axios";
+import Constants from "expo-constants";
+import * as Network from 'expo-network';
+import { io } from 'socket.io-client';
+
 import BotDot from "../../assets/botDot.svg";
 import TopDot from "../../assets/topDot.svg";
+
 import PostList from "../components/PostList";
+import SearchBar from "../components/SearchBar";
+
 import { useDispatch, useSelector } from "react-redux";
 import { selectDestinationLocation } from "../../slices/destinationLocationSlice";
 import { selectCurrentLocation } from "../../slices/currentLocationSlice";
@@ -29,17 +36,17 @@ import { selectUser } from "../../slices/userSlice.js";
 import { updateTrip } from "../../slices/tripSlice";
 import { updateLocation as updateLocationCurrentLocation } from "../../slices/currentLocationSlice";
 import { updateLocation as updateLocationDestLocation } from "../../slices/destinationLocationSlice";
-import axios from "axios";
 import { socket } from "../socket.js";
-import * as Network from 'expo-network';
+
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
 export default function MainScreen({ route, navigation }) {
   const dispatch = useDispatch();
-
   const user = useSelector(selectUser);
+
+
   const destinationLocation = useSelector(selectDestinationLocation);
   const currentLocation = useSelector(selectCurrentLocation);
   const trip = useSelector(selectTrip);
@@ -63,39 +70,79 @@ export default function MainScreen({ route, navigation }) {
   const [path, setPath] = useState(null);
   const [postsIndex, setPostsIndex] = useState(0);
   const selectPosts = (index) => {
+
     console.log(`selecting posts ${index}`);
     setPostsIndex(index);
   };
 
+  const URL = Constants.expoConfig.extra.URL;
   useEffect(() => {
-    const socket = io("http://10.0.2.2:3000", {
+
+    const markerNames = ["mateLoc", "mateDestLoc", "current", "dest"];
+    mapRef.current.fitToSuppliedMarkers(markerNames, {
+      edgePadding: {
+        top: hp("2%"),
+        right: wp("2%"),
+        bottom: hp("12%"),
+        left: wp("2%"),
+      },
+    });
+  }, [destinationLocation.latitude]);
+
+
+  useEffect(() => {
+    const socket = io(`http://${URL}`, {
       transports: ["websocket"],
     });
     socket.on("connect", () => {
       console.log("connected");
-      socket.emit("new user", {
-        'currentLocation': {
-          'lat': currentLocation.latitude,
-          'lng': currentLocation.longitude
-        },
-        'destinationLocation': {
-          'lat': destinationLocation.latitude,
-          'lng': destinationLocation.longitude
-        },
-        'name': user.firstName,
-        'id': user.id,
-      });
+      console.log(user);
+      console.log(destinationLocation);
+      console.log(currentLocation.places[0].id)
+      // console.log();
+      if (currentLocation.places.length > 0 && currentLocation.places[0].id && destinationLocation.place_id) {
+        axios.get(`http://${URL}/api/v1/route/`, {
+          params: {
+            originCoordinate: [currentLocation.latitude, currentLocation.longitude].join(', '),
+            destCoordinate: [destinationLocation.latitude, destinationLocation.longitude].join(', '),
+            originId: currentLocation.places[0].id,
+            destId: destinationLocation.place_id
+          },
+        }).then(res => {
+          socket.emit("new user", {
+            id: user.id,
+            routeIds: res.data.routes,
+            current: {
+              coordinate: [currentLocation.latitude, currentLocation.longitude].join(', '),
+            },
+            destination: {
+              coordinate: [destinationLocation.latitude, destinationLocation.longitude].join(', '),
+            },
+            places: currentLocation.places,
+            name: user.firstName,
+          });
+
+        }).catch(error => {
+          console.log(error);
+        })
+      }
     });
     socket.on("active users", (users) => {
       let temp = [];
       Object.keys(users).forEach((key) => {
         temp.push(users[key]);
       });
-      // setActiveUsers(
-      //   temp.filter((activeUser) => activeUser.name !== user.name)
-      // );
     });
-  }, []);
+    const markerNames = ["mateLoc", "mateDestLoc", "current", "dest"];
+    mapRef.current.fitToSuppliedMarkers(markerNames, {
+      edgePadding: {
+        top: hp("2%"),
+        right: wp("2%"),
+        bottom: hp("12%"),
+        left: wp("2%"),
+      },
+    });
+  }, [destinationLocation.latitude]);
 
   const mapRef = useRef(null);
   const [count, setCount] = useState(0);
@@ -168,7 +215,6 @@ export default function MainScreen({ route, navigation }) {
     },
   ]);
   /*
-  
   useEffect(() => {
     console.log(postsIndex);
     console.log("PostSwitching");
@@ -249,6 +295,7 @@ export default function MainScreen({ route, navigation }) {
     });
   }, [soloTaxiCoordinates]);
 
+
   useEffect(() => {
     setCount(count + 1);
   }, [route.params]);
@@ -259,7 +306,6 @@ export default function MainScreen({ route, navigation }) {
       <StatusBar hidden />
       <MapView
         ref={mapRef}
-        provider={PROVIDER_GOOGLE}
         style={styles.map}
         region={currentLocation}
         onMapReady={onMapReady}
@@ -280,6 +326,7 @@ export default function MainScreen({ route, navigation }) {
             identifier={destinationLocation.identifier}
           />
         )}
+
         {trip.groupTaxiCoordinates.length > 0 && (
           <Marker
             coordinate={trip.groupTaxiCoordinates[0]}
@@ -392,7 +439,7 @@ export default function MainScreen({ route, navigation }) {
         }}
       >
         <SearchBar
-          placeholder={"Гэр"}
+          placeholder={currentLocation.name}
           active={0}
           placeholderStyle={{ color: "#11AABE" }}
           style={{

@@ -10,6 +10,8 @@ const currentLocationSlice = createSlice({
     identifier: "current",
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
+    place_id : null,
+    places: [],
     name: "",
   },
   reducers: {
@@ -22,6 +24,7 @@ const currentLocationSlice = createSlice({
         latitudeDelta: action.payload.latitudeDelta || state.latitudeDelta,
         longitudeDelta: action.payload.longitudeDelta || state.longitudeDelta,
         name: action.payload.name || state.name,
+        places: action.payload.places || state.places,
       };
     },
   },

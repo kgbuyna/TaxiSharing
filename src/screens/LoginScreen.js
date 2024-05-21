@@ -22,6 +22,11 @@ import {
 } from "../../slices/userSlice";
 import { useDispatch } from "react-redux";
 
+import Constants from "expo-constants";
+
+
+const URL = Constants.expoConfig.extra.URL;
+
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
 
@@ -53,12 +58,12 @@ const LoginScreen = ({ navigation }) => {
     });
   };
   const handleLogin = () => {
-    // За ийм жижиг зүйл дээр санах зовохоо болих хэрэгтэй. Том зурагаараа юмаа харья тэгэх үү?
+
     setFocus(0);
     Keyboard.dismiss();
+
     const isValidPhoneNumber = /^[0-9]+$/.test(phoneNumber);
     const isValidPhoneNumberLength = phoneNumber.length >= 8;
-    // const isValidPhoneNumberLength = phoneNumber.length >= 8;
 
     if (phoneNumber.length == 0) {
       setErrorText((prevState) => ({
@@ -86,8 +91,7 @@ const LoginScreen = ({ navigation }) => {
     } else {
       axios
         .post(
-          "http://10.0.2.2:3000/api/v1/login",
-          // localhost:3000/api/v1/login
+          `http://${URL}/api/v1/login`,
           {
             phone: phoneNumber,
             password: password,
@@ -99,8 +103,6 @@ const LoginScreen = ({ navigation }) => {
           }
         )
         .then((response) => {
-          // 99243596
-          // 123456789
           if (response.data.success) {
             console.log("Login Successful. Please Login to proceed");
             dispatch(setUserId(response.data.user.id));
@@ -112,7 +114,7 @@ const LoginScreen = ({ navigation }) => {
               ...prevState,
               password: response.data.message,
             }));
-            // setIsSuccessful(false);
+
             setPassword("");
           }
         })
@@ -121,9 +123,7 @@ const LoginScreen = ({ navigation }) => {
           console.log(error.message);
         });
     }
-    //{}
   };
-  // const borderColor = isFocused ? "#11AABE" : "#ffffff";
 
   const handleSignUpLinkPress = () => {
     navigation.navigate("SignUp");
@@ -149,7 +149,6 @@ const LoginScreen = ({ navigation }) => {
           <Text style={styles.title}>Тавтай морилно уу</Text>
         </View>
 
-        {/* <Text>{borderColor}fasdffasdfas fasdf a</Text> */}
         <TextInput
           ref={phoneNumberRef}
           style={[
@@ -166,7 +165,6 @@ const LoginScreen = ({ navigation }) => {
           onFocus={(event) => {
             handleFocus(event, "phoneNumber");
             if (errorText.hasOwnProperty("phoneNumber")) {
-              console.log("sda");
               setTimeout(() => {
                 setPhoneNumber("");
               }, 100);
@@ -174,7 +172,6 @@ const LoginScreen = ({ navigation }) => {
           }}
           onBlur={handleBlur}
           onSubmitEditing={handlePhoneNumberSubmit}
-        // key={1}
         />
 
         <Text style={styles.errorMsg}>
